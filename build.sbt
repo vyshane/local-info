@@ -39,10 +39,6 @@ PB.targets in Compile := Seq(
   scalapb.gen(grpc = true, flatPackage = true) -> (sourceManaged in Compile).value,
   grpcmonix.generators.GrpcMonixGenerator(flatPackage = true) -> (sourceManaged in Compile).value
 )
-PB.protoSources in Compile := Seq(
-  sourceDirectory.value / "localinfo",
-  sourceDirectory.value / "type"
-)
 
 // Code formatting
 scalafmtConfig := file(".scalafmt.conf")
