@@ -1,0 +1,10 @@
+*.class
+*.log
+
+# sbt
+target/
+project/project/
+project/target/
+
+# IDEs
+.idea/
