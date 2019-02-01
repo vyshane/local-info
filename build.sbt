@@ -15,9 +15,8 @@ libraryDependencies ++= Seq(
   // Effects
   "io.monix" %% "monix" % "2.3.3",
   // gRPC and Protocol Buffers
-  "io.grpc" % "grpc-netty-shaded" % "1.18.0",
-  "io.grpc" % "grpc-stub" % "1.18.0",
-  "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion,
+  "io.grpc" % "grpc-netty-shaded" % scalapb.compiler.Version.grpcJavaVersion,
+  "io.grpc" % "grpc-stub" % scalapb.compiler.Version.grpcJavaVersion,
   "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
   "beyondthelines" %% "grpcmonixruntime" % "0.0.7",
