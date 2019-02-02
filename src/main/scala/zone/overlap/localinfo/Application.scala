@@ -3,7 +3,7 @@
 package zone.overlap.localinfo
 
 import com.typesafe.scalalogging.LazyLogging
-import io.grpc.netty.NettyServerBuilder
+import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import mu.node.healthttpd.Healthttpd
 import wvlet.airframe._
 import zone.overlap.localinfo.service.LocalInfoService

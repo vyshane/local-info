@@ -20,6 +20,11 @@ libraryDependencies ++= Seq(
   "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion,
   "com.thesamet.scalapb" %% "scalapb-runtime" % scalapb.compiler.Version.scalapbVersion % "protobuf",
   "beyondthelines" %% "grpcmonixruntime" % "0.0.7",
+  // HTTP client
+  "com.softwaremill.sttp" %% "core" % "1.5.8",
+  "com.softwaremill.sttp" %% "circe" % "1.5.8",
+  // Database
+  "org.foundationdb" % "fdb-record-layer-core-pb3" % "2.5.40.0",
   // Monitoring
   "mu.node" %% "healthttpd" % "0.1.0",
   // Sunrise and sunset calculations
@@ -37,6 +42,10 @@ libraryDependencies ++= Seq(
 PB.targets in Compile := Seq(
   scalapb.gen(grpc = true, flatPackage = true) -> (sourceManaged in Compile).value,
   grpcmonix.generators.GrpcMonixGenerator(flatPackage = true) -> (sourceManaged in Compile).value
+)
+PB.includePaths in Compile := Seq(
+  baseDirectory.value / "src" / "main" / "protobuf" / "api",
+  baseDirectory.value / "src" / "main" / "protobuf" / "persistence"
 )
 
 // Code formatting

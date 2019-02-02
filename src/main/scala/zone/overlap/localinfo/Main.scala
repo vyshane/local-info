@@ -2,6 +2,7 @@
 
 package zone.overlap.localinfo
 
+import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBDatabaseFactory}
 import com.typesafe.scalalogging.LazyLogging
 import mu.node.healthttpd.Healthttpd
 import pureconfig.generic.auto._
@@ -16,6 +17,7 @@ object Main extends App with LazyLogging {
     newDesign
       .bind[Config].toInstance(config)
       .bind[Healthttpd].toInstance(Healthttpd(config.statusPort))
+      .bind[FDBDatabase].toInstance(FDBDatabaseFactory.instance().getDatabase(config.foundationDbClusterFile))
 
       // Startup
       .withProductionMode
