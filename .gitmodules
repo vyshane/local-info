@@ -1,0 +1,3 @@
+[submodule "src/main/protobuf/api"]
+	path = src/main/protobuf/api
+	url = git@github.com:vyshane/overlap-api.git

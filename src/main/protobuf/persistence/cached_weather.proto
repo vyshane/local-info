@@ -1,0 +1,19 @@
+// Copyright 2019 Vy-Shane Xie
+
+syntax = "proto3";
+
+package overlap.localinfo.persistence;
+
+option java_multiple_files = true;
+option java_outer_classname = "CachedWeatherProto";
+option java_package = "zone.overlap.localinfo.persistence";
+
+import "google/protobuf/timestamp.proto";
+import "overlap/local_info/v1/local_info.proto";
+
+message CachedWeather {
+    string locality_key = 1;
+    overlap.localinfo.v1.Weather weather = 2;
+    google.protobuf.Timestamp retrived_at = 3;
+}
+

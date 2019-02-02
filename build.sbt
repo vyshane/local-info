@@ -43,7 +43,7 @@ PB.targets in Compile := Seq(
   scalapb.gen(grpc = true, flatPackage = true) -> (sourceManaged in Compile).value,
   grpcmonix.generators.GrpcMonixGenerator(flatPackage = true) -> (sourceManaged in Compile).value
 )
-PB.includePaths in Compile := Seq(
+PB.protoSources in Compile := Seq(
   baseDirectory.value / "src" / "main" / "protobuf" / "api",
   baseDirectory.value / "src" / "main" / "protobuf" / "persistence"
 )
