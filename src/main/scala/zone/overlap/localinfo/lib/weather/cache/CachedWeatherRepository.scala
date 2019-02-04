@@ -40,13 +40,16 @@ class CachedWeatherRepository(db: FDBDatabase) {
 
   def get(locationKey: String): Task[Option[CachedWeather]] = {
     Task {
-      Option[FDBStoredRecord[Message]](
+      Option[FDBStoredRecord[Message]] {
         db.run(context => {
           recordStoreProvider
             .apply(context)
             .loadRecord(Tuple.from(locationKey))
         })
-      ).map(r => CachedWeather().mergeFrom(r.getRecord().toByteString.newCodedInput()))
+      } map { sr =>
+        CachedWeather()
+          .mergeFrom(sr.getRecord().toByteString.newCodedInput())
+      }
     }
   }
 
