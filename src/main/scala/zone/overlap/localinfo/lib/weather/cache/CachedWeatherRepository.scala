@@ -30,7 +30,7 @@ class CachedWeatherRepository(db: FDBDatabase) {
 
   val recordMetaData = metaDataBuilder.build()
 
-  val recordStoreProvider = (context: FDBRecordContext) =>
+  val getRecordStore = (context: FDBRecordContext) =>
     FDBRecordStore
       .newBuilder()
       .setMetaDataProvider(recordMetaData)
@@ -42,9 +42,7 @@ class CachedWeatherRepository(db: FDBDatabase) {
     Task {
       Option[FDBStoredRecord[Message]] {
         db.run(context => {
-          recordStoreProvider
-            .apply(context)
-            .loadRecord(Tuple.from(locationKey))
+          getRecordStore(context).loadRecord(Tuple.from(locationKey))
         })
       } map { sr =>
         CachedWeather()
