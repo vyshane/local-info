@@ -12,8 +12,11 @@ import "google/protobuf/timestamp.proto";
 import "overlap/local_info/v1/local_info.proto";
 
 message CachedWeather {
-    string locality_key = 1;
-    overlap.localinfo.v1.Weather weather = 2;
-    google.protobuf.Timestamp retrived_at = 3;
+  string locality_key = 1;
+  overlap.localinfo.v1.Weather weather = 2;
+  google.protobuf.Timestamp retrived_at = 3;
 }
 
+message RecordTypeUnion {
+  CachedWeather _CachedWeather = 1;
+}
