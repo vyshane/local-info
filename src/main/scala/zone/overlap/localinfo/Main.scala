@@ -2,6 +2,7 @@
 
 package zone.overlap.localinfo
 
+import com.apple.foundationdb.record.provider.foundationdb.keyspace.{KeySpace, KeySpaceDirectory}
 import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBDatabaseFactory}
 import com.typesafe.scalalogging.LazyLogging
 import mu.node.healthttpd.Healthttpd
@@ -17,7 +18,9 @@ object Main extends App with LazyLogging {
     newDesign
       .bind[Config].toInstance(config)
       .bind[Healthttpd].toInstance(Healthttpd(config.statusPort))
-      .bind[FDBDatabase].toInstance(FDBDatabaseFactory.instance().getDatabase(config.foundationDbClusterFile))
+      .bind[FDBDatabase].toInstance(FDBDatabaseFactory.instance().getDatabase(config.fdbClusterFile))
+      .bind[KeySpace].toInstance(new KeySpace(
+        new KeySpaceDirectory(config.fdbKeySpaceDirectory, KeySpaceDirectory.KeyType.STRING)))
 
       // Startup
       .withProductionMode

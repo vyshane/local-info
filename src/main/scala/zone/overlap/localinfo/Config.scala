@@ -2,8 +2,11 @@
 
 package zone.overlap.localinfo
 
-case class Config(grpcPort: Int,
-                  statusPort: Int,
-                  locationIqToken: String,
-                  openWeatherMapApiKey: String,
-                  foundationDbClusterFile: String)
+case class Config(
+    grpcPort: Int,
+    statusPort: Int,
+    locationIqToken: String,
+    openWeatherMapApiKey: String,
+    fdbClusterFile: String,
+    fdbKeySpaceDirectory: String
+)

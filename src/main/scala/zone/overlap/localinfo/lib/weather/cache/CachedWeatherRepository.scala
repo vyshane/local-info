@@ -8,34 +8,30 @@ import com.apple.foundationdb.record.RecordMetaData
 import com.apple.foundationdb.record.metadata.{Index, Key}
 import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBRecordContext, FDBRecordStore, FDBStoredRecord}
 import com.apple.foundationdb.record.provider.foundationdb.keyspace.KeySpace
-import com.apple.foundationdb.record.provider.foundationdb.keyspace.KeySpaceDirectory
 import com.apple.foundationdb.tuple.Tuple
 import com.google.protobuf.Message
 import monix.eval.Task
 import zone.overlap.localinfo.persistence.CachedWeather
 import zone.overlap.localinfo.v1.LocalInfoProto
 
-class CachedWeatherRepository(db: FDBDatabase) {
+class CachedWeatherRepository(db: FDBDatabase, keySpace: KeySpace) {
 
-  val keySpace = new KeySpace(new KeySpaceDirectory("local-info", KeySpaceDirectory.KeyType.STRING, "local-info"))
-  val path = keySpace.path("cached-weather")
-  val metaDataBuilder = RecordMetaData.newBuilder().setRecords(LocalInfoProto.javaDescriptor)
-
-  metaDataBuilder
-    .getRecordType("CachedWeather")
-    .setPrimaryKey(Key.Expressions.field("locality_key"))
-
-  metaDataBuilder
-    .addIndex("CachedWeather", new Index("retrievedAtIndex", Key.Expressions.field("retrieved_at")))
-
-  val recordMetaData = metaDataBuilder.build()
+  val recordMetaData = {
+    val metaDataBuilder = RecordMetaData.newBuilder().setRecords(LocalInfoProto.javaDescriptor)
+    metaDataBuilder
+      .getRecordType("CachedWeather")
+      .setPrimaryKey(Key.Expressions.field("locality_key"))
+    metaDataBuilder
+      .addIndex("CachedWeather", new Index("retrievedAtIndex", Key.Expressions.field("retrieved_at")))
+    metaDataBuilder.build()
+  }
 
   val getRecordStore = (context: FDBRecordContext) =>
     FDBRecordStore
       .newBuilder()
       .setMetaDataProvider(recordMetaData)
       .setContext(context)
-      .setKeySpacePath(path)
+      .setKeySpacePath(keySpace.path("cached-weather"))
       .createOrOpen();
 
   def get(locationKey: String): Task[Option[CachedWeather]] = {
