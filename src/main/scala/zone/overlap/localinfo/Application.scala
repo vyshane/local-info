@@ -7,7 +7,7 @@ import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder
 import mu.node.healthttpd.Healthttpd
 import wvlet.airframe._
 import zone.overlap.localinfo.service.LocalInfoService
-import zone.overlap.localinfo.v1.LocalInfoGrpcMonix
+import zone.overlap.localinfo.v1.local_info.LocalInfoGrpcMonix
 
 trait Application extends LazyLogging {
   private val config = bind[Config]

@@ -11,13 +11,14 @@ import com.apple.foundationdb.record.provider.foundationdb.keyspace.KeySpace
 import com.apple.foundationdb.tuple.Tuple
 import com.google.protobuf.Message
 import monix.eval.Task
-import zone.overlap.localinfo.persistence.CachedWeather
+import zone.overlap.localinfo.persistence.{CachedWeather => CachedWeatherJava}
+import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.v1.LocalInfoProto
 
 class CachedWeatherRepository(db: FDBDatabase, keySpace: KeySpace) {
 
-  val recordMetaData = {
-    val metaDataBuilder = RecordMetaData.newBuilder().setRecords(LocalInfoProto.javaDescriptor)
+  private val recordMetaData = {
+    val metaDataBuilder = RecordMetaData.newBuilder().setRecords(LocalInfoProto.getDescriptor)
     metaDataBuilder
       .getRecordType("CachedWeather")
       .setPrimaryKey(Key.Expressions.field("locality_key"))
@@ -26,7 +27,7 @@ class CachedWeatherRepository(db: FDBDatabase, keySpace: KeySpace) {
     metaDataBuilder.build()
   }
 
-  val getRecordStore = (context: FDBRecordContext) =>
+  private val getRecordStore = (context: FDBRecordContext) =>
     FDBRecordStore
       .newBuilder()
       .setMetaDataProvider(recordMetaData)
@@ -40,18 +41,28 @@ class CachedWeatherRepository(db: FDBDatabase, keySpace: KeySpace) {
         db.run(context => {
           getRecordStore(context).loadRecord(Tuple.from(locationKey))
         })
-      } map { sr =>
-        CachedWeather()
-          .mergeFrom(sr.getRecord().toByteString.newCodedInput())
-      }
+      } map toCachedWeather
     }
   }
 
   def save(cachedWeather: CachedWeather): Task[Unit] = {
-    ???
+    def storeRecord: FDBStoredRecord[Message] =
+      db.run(context => {
+        getRecordStore(context).saveRecord(CachedWeather.toJavaProto(cachedWeather))
+      })
+    Task(storeRecord)
   }
 
   def delete(locationKey: String, olderThan: Instant): Task[Boolean] = {
     ???
+  }
+
+  private def toCachedWeather(storedRecord: FDBStoredRecord[Message]): CachedWeather = {
+    CachedWeather.fromJavaProto(
+      CachedWeatherJava
+        .newBuilder()
+        .mergeFrom(storedRecord.getRecord())
+        .build()
+    )
   }
 }

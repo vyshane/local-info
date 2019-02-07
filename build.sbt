@@ -39,9 +39,11 @@ libraryDependencies ++= Seq(
 )
 
 // Protobuf/gRPC code generation
+import scalapb.compiler.Version.protobufVersion
 PB.targets in Compile := Seq(
-  scalapb.gen(grpc = true, flatPackage = true) -> (sourceManaged in Compile).value,
-  grpcmonix.generators.GrpcMonixGenerator(flatPackage = true) -> (sourceManaged in Compile).value
+  PB.gens.java(protobufVersion) -> (sourceManaged in Compile).value,
+  scalapb.gen(javaConversions = true, grpc = true) -> (sourceManaged in Compile).value,
+  grpcmonix.generators.GrpcMonixGenerator() -> (sourceManaged in Compile).value
 )
 PB.protoSources in Compile := Seq(
   baseDirectory.value / "src" / "main" / "protobuf" / "api",
