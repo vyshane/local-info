@@ -35,7 +35,9 @@ libraryDependencies ++= Seq(
   // Testing
   "org.scalatest" %% "scalatest" % "3.0.5" % Test,
   "org.scalamock" %% "scalamock" % "4.1.0" % Test,
-  "com.github.javafaker" % "javafaker" % "0.16" % Test
+  "com.github.javafaker" % "javafaker" % "0.16" % Test,
+  "com.whisk" %% "docker-testkit-scalatest" % "0.10.0-beta5" % Test,
+  "com.whisk" %% "docker-testkit-impl-spotify" % "0.9.8" % Test,
 )
 
 // Protobuf/gRPC code generation

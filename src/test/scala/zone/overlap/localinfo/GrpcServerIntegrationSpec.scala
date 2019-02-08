@@ -10,7 +10,7 @@ import monix.execution.Scheduler.Implicits.global
 import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncWordSpec, BeforeAndAfterAll, Matchers}
 import zone.overlap.localinfo.service.LocalInfoService
-import zone.overlap.localinfo.v1.{GetLocalInfoRequest, LocalInfo, LocalInfoGrpcMonix}
+import zone.overlap.localinfo.v1.local_info.{GetLocalInfoRequest, LocalInfo, LocalInfoGrpcMonix}
 
 // Exercise the gRPC server (in-process)
 class GrpcServerIntegrationSpec extends AsyncWordSpec with Matchers with AsyncMockFactory with BeforeAndAfterAll {

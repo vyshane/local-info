@@ -8,15 +8,17 @@ option java_multiple_files = true;
 option java_outer_classname = "CachedWeatherProto";
 option java_package = "zone.overlap.localinfo.persistence";
 
+import "record_metadata_options.proto";
 import "google/protobuf/timestamp.proto";
 import "overlap/local_info/v1/local_info.proto";
 
 message CachedWeather {
   string locality_key = 1;
   overlap.localinfo.v1.Weather weather = 2;
-  google.protobuf.Timestamp retrived_at = 3;
+  google.protobuf.Timestamp retrieved_at = 3;
 }
 
-message RecordTypeUnion {
+message UnionDescriptor {
+  option (com.apple.foundationdb.record.record).usage = UNION;
   CachedWeather _CachedWeather = 1;
 }

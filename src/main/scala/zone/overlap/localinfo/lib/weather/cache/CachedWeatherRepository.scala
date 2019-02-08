@@ -7,24 +7,30 @@ import java.time.Instant
 import com.apple.foundationdb.record.RecordMetaData
 import com.apple.foundationdb.record.metadata.{Index, Key}
 import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBRecordContext, FDBRecordStore, FDBStoredRecord}
-import com.apple.foundationdb.record.provider.foundationdb.keyspace.KeySpace
+import com.apple.foundationdb.record.provider.foundationdb.keyspace.{KeySpace, KeySpaceDirectory}
 import com.apple.foundationdb.tuple.Tuple
 import com.google.protobuf.Message
 import monix.eval.Task
-import zone.overlap.localinfo.persistence.{CachedWeather => CachedWeatherJava}
+import zone.overlap.localinfo.persistence.{CachedWeatherProto, CachedWeather => CachedWeatherJava}
 import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
-import zone.overlap.localinfo.v1.LocalInfoProto
 
-class CachedWeatherRepository(db: FDBDatabase, keySpace: KeySpace) {
+class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
 
   private val recordMetaData = {
-    val metaDataBuilder = RecordMetaData.newBuilder().setRecords(LocalInfoProto.getDescriptor)
+    val metaDataBuilder = RecordMetaData.newBuilder().setRecords(CachedWeatherProto.getDescriptor)
     metaDataBuilder
       .getRecordType("CachedWeather")
       .setPrimaryKey(Key.Expressions.field("locality_key"))
-    metaDataBuilder
-      .addIndex("CachedWeather", new Index("retrievedAtIndex", Key.Expressions.field("retrieved_at")))
+//    metaDataBuilder
+//      .addIndex("CachedWeather", new Index("retrievedAtIndex", Key.Expressions.field("retrieved_at")))
     metaDataBuilder.build()
+  }
+
+  val keySpacePath = {
+    val keySpace = new KeySpace(
+      new KeySpaceDirectory(keySpaceDirectoryName, KeySpaceDirectory.KeyType.STRING, keySpaceDirectoryName)
+    )
+    keySpace.path(keySpaceDirectoryName)
   }
 
   private val getRecordStore = (context: FDBRecordContext) =>
@@ -32,7 +38,7 @@ class CachedWeatherRepository(db: FDBDatabase, keySpace: KeySpace) {
       .newBuilder()
       .setMetaDataProvider(recordMetaData)
       .setContext(context)
-      .setKeySpacePath(keySpace.path("cached-weather"))
+      .setKeySpacePath(keySpacePath)
       .createOrOpen();
 
   def get(locationKey: String): Task[Option[CachedWeather]] = {
@@ -46,11 +52,11 @@ class CachedWeatherRepository(db: FDBDatabase, keySpace: KeySpace) {
   }
 
   def save(cachedWeather: CachedWeather): Task[Unit] = {
-    def storeRecord: FDBStoredRecord[Message] =
+    Task[FDBStoredRecord[Message]] {
       db.run(context => {
         getRecordStore(context).saveRecord(CachedWeather.toJavaProto(cachedWeather))
       })
-    Task(storeRecord)
+    } map (_ => ())
   }
 
   def delete(locationKey: String, olderThan: Instant): Task[Boolean] = {
