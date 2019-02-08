@@ -13,6 +13,9 @@ class CachedWeatherRepositorySpec extends AsyncWordSpec with Matchers with Found
 
   val repository = new CachedWeatherRepository(fdb, "local-info-tests")
 
+  // TODO: run on fdb startup:
+  //  fdbcli --exec "configure new single memory ; status"
+
   "CachedWeatherRepository" when {
     "asked to get a record that doesn't exist" should {
       "return empty option" in {
