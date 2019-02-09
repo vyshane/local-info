@@ -5,7 +5,6 @@ package zone.overlap.localinfo.lib.weather.cache
 import java.time.Instant
 
 import com.apple.foundationdb.record.RecordMetaData
-import com.apple.foundationdb.record.metadata.expressions.KeyExpression.FanType
 import com.apple.foundationdb.record.metadata.Index
 import com.apple.foundationdb.record.metadata.Key.Expressions._
 import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBRecordContext, FDBRecordStore, FDBStoredRecord}
