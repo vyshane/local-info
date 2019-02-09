@@ -5,7 +5,9 @@ package zone.overlap.localinfo.lib.weather.cache
 import java.time.Instant
 
 import com.apple.foundationdb.record.RecordMetaData
-import com.apple.foundationdb.record.metadata.{Index, Key}
+import com.apple.foundationdb.record.metadata.expressions.KeyExpression.FanType
+import com.apple.foundationdb.record.metadata.Index
+import com.apple.foundationdb.record.metadata.Key.Expressions._
 import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBRecordContext, FDBRecordStore, FDBStoredRecord}
 import com.apple.foundationdb.record.provider.foundationdb.keyspace.{KeySpace, KeySpaceDirectory}
 import com.apple.foundationdb.tuple.Tuple
@@ -18,11 +20,12 @@ class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
 
   private val recordMetaData = {
     val metaDataBuilder = RecordMetaData.newBuilder().setRecords(CachedWeatherProto.getDescriptor)
-    metaDataBuilder
-      .getRecordType("CachedWeather")
-      .setPrimaryKey(Key.Expressions.field("locality_key"))
-//    metaDataBuilder
-//      .addIndex("CachedWeather", new Index("retrievedAtIndex", Key.Expressions.field("retrieved_at")))
+    metaDataBuilder.addIndex("CachedWeather",
+      new Index(
+        "retrieved_at_index",
+        field("retrieved_at").nest(concat(field("seconds"), field("nanos")))
+      )
+    )
     metaDataBuilder.build()
   }
 
