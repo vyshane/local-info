@@ -5,16 +5,13 @@ package zone.overlap.localinfo.lib.weather.cache
 import org.scalatest.{AsyncWordSpec, Matchers}
 import monix.execution.Scheduler.Implicits.global
 
-/**
+/*
  * Integration tests for the CacheWeatherRepository
  * The tests in this spec need a Docker engine to run FoundationDB
  */
 class CachedWeatherRepositorySpec extends AsyncWordSpec with Matchers with FoundationDbDockerTestKit {
 
   val repository = new CachedWeatherRepository(fdb, "local-info-tests")
-
-  // TODO: run on fdb startup:
-  //  fdbcli --exec "configure new single memory ; status"
 
   "CachedWeatherRepository" when {
     "asked to get a record that doesn't exist" should {

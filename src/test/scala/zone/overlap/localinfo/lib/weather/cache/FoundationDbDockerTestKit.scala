@@ -17,17 +17,21 @@ import com.whisk.docker.testkit.scalatest.DockerTestKitForAll
 import org.scalatest.Suite
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
+/*
  * Provides a FoundationDB Docker container for integration tests
  */
 trait FoundationDbDockerTestKit extends DockerTestKitForAll {
   self: Suite =>
 
+  val fdb = FDBDatabaseFactory
+    .instance()
+    // Assumes a src/test/resources/fdb.cluster file with the following contents:
+    // docker:docker@127.0.0.1:4500
+    .getDatabase(getClass.getResource("/fdb.cluster").getPath)
+
   private val fdbPort = 4500
 
-  val fdb = FDBDatabaseFactory.instance().getDatabase(getClass.getResource("/fdb.cluster").getPath)
-
-  lazy val fdbContainer = ContainerSpec("foundationdb/foundationdb:latest")
+  private lazy val fdbContainer = ContainerSpec("foundationdb/foundationdb:latest")
     .withPortBindings(fdbPort -> PortBinding.of("0.0.0.0", fdbPort))
     .withEnv("FDB_NETWORKING_MODE=host", s"FDB_PORT=$fdbPort")
     // FoundationDB Docker container doesn't come with a pre-configured database
@@ -36,20 +40,17 @@ trait FoundationDbDockerTestKit extends DockerTestKitForAll {
   override val managedContainers: ManagedContainers = fdbContainer.toManagedContainer
 }
 
-/**
- * Ready checker for FoundationDB container, with ability to run a fdbcli exec command
- * once fdb has started.
+/*
+ * Ready checker for FoundationDB container, with the ability to run a fdbcli --exec command
+ * once FoundationDB has started.
  */
-class FdbDockerReadyChecker(onReadyFdbcliExec: String) extends DockerReadyChecker {
+class FdbDockerReadyChecker(onReadyFdbcliExec: String = "status") extends DockerReadyChecker {
 
   override def apply(container: BaseContainer)(implicit docker: ContainerCommandExecutor,
                                                ec: ExecutionContext): Future[Unit] = {
     val execOnReady: (String) => Future[Unit] = (containerId) => {
       Future {
-        docker.client.execCreate(
-          containerId,
-          Array("/usr/bin/fdbcli", "--exec", onReadyFdbcliExec)
-        )
+        docker.client.execCreate(containerId, Array("/usr/bin/fdbcli", "--exec", onReadyFdbcliExec))
       } map { exec =>
         docker.client.execStart(exec.id()).readFully()
       } map (_ => ())
