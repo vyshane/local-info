@@ -13,7 +13,12 @@ import "google/protobuf/timestamp.proto";
 import "overlap/local_info/v1/local_info.proto";
 
 message CachedWeather {
+  // Format: /language/measurement_system/country_code/state/county/city/city_district/suburb
+  // The _ character is used in place of any blank address fields
+  // The language, measurement_system and country_code fields must not be blank
+  // At least one of these fields must not be blank: city, city_district, suburb
   string locality_key = 1 [(com.apple.foundationdb.record.field).primary_key = true];
+
   overlap.localinfo.v1.Weather weather = 2;
   google.protobuf.Timestamp retrieved_at = 3;
 }
