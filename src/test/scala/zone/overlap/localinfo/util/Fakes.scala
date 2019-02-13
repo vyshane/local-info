@@ -12,9 +12,7 @@ import zone.overlap.localinfo.v1.local_info.{Address, Language, MeasurementSyste
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.localinfo.lib.weather.cache._
 
-/**
-  * @author shane.xie
-  */ /*
+/*
  * Fake entity generators
  */
 object Fakes {
