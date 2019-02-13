@@ -43,11 +43,11 @@ class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
       .setKeySpacePath(keySpacePath)
       .createOrOpen();
 
-  def get(locationKey: String): Task[Option[CachedWeather]] = {
+  def get(localityKey: String): Task[Option[CachedWeather]] = {
     Task {
       Option[FDBStoredRecord[Message]] {
         db.run(context => {
-          getRecordStore(context).loadRecord(Tuple.from(locationKey))
+          getRecordStore(context).loadRecord(Tuple.from(localityKey))
         })
       } map toCachedWeather
     }
