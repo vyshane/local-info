@@ -34,7 +34,7 @@ trait FoundationDbDockerTestKit extends DockerTestKitForAll {
   private lazy val fdbContainer = ContainerSpec("foundationdb/foundationdb:latest")
     .withPortBindings(fdbPort -> PortBinding.of("0.0.0.0", fdbPort))
     .withEnv("FDB_NETWORKING_MODE=host", s"FDB_PORT=$fdbPort")
-    // FoundationDB Docker container doesn't come with a pre-configured database
+    // The FoundationDB Docker image doesn't come with a pre-configured database
     .withReadyChecker(new FdbDockerReadyChecker("configure new single memory"))
 
   override val managedContainers: ManagedContainers = fdbContainer.toManagedContainer
