@@ -1,15 +1,20 @@
 // Copyright 2019 Vy-Shane Xie
 
 package zone.overlap.localinfo.util
+
 import java.util.concurrent.TimeUnit
 
 import com.github.javafaker.Faker
 import com.google.protobuf.timestamp.Timestamp
+import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.v1.local_info.MeasurementSystem.{IMPERIAL, METRIC}
 import zone.overlap.localinfo.v1.local_info.{Address, Language, MeasurementSystem, Weather}
 import zone.overlap.protobuf.coordinate.Coordinate
+import zone.overlap.localinfo.lib.weather.cache._
 
-/*
+/**
+  * @author shane.xie
+  */ /*
  * Fake entity generators
  */
 object Fakes {
@@ -77,6 +82,13 @@ object Fakes {
   def randomWeather(): Weather = {
     if (faker.random().nextBoolean()) randomWeather(IMPERIAL)
     else randomWeather(METRIC)
+  }
+
+  def randomCachedWeather(): CachedWeather = {
+    val language = randomLanguage()
+    val measurementSystem = randomMeasurementSystem()
+    val localityKey = generateLocalityKey(language, measurementSystem, randomAddress())
+    CachedWeather(localityKey.get, Option(randomWeather(measurementSystem)), Option(randomTimestamp()))
   }
 
   private def randomTemperature(measurementSystem: MeasurementSystem): Float = {

@@ -4,7 +4,6 @@ package zone.overlap.localinfo.lib.weather.cache
 
 import org.scalatest.{AsyncWordSpec, Matchers}
 import monix.execution.Scheduler.Implicits.global
-import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.util.Fakes._
 
 /*
@@ -23,14 +22,10 @@ class CachedWeatherRepositorySpec extends AsyncWordSpec with Matchers with Found
     }
     "asked to save and retrieve a record" should {
       "return the record when retrieved again" in {
-        val language = randomLanguage()
-        val measurementSystem = randomMeasurementSystem()
-        val localityKey = generateLocalityKey(language, measurementSystem, randomAddress())
-        val cachedWeather =
-          CachedWeather(localityKey.get, Option(randomWeather(measurementSystem)), Option(randomTimestamp()))
+        val cachedWeather = randomCachedWeather()
         val retrieved = for {
           _ <- repository.save(cachedWeather)
-          cw <- repository.get(localityKey.get)
+          cw <- repository.get(cachedWeather.localityKey)
         } yield cw
         retrieved.runAsync.map(_ shouldEqual Option(cachedWeather))
       }
