@@ -1,7 +1,10 @@
 // Copyright 2019 Vy-Shane Xie
 
 package zone.overlap.localinfo.util
+import java.util.concurrent.TimeUnit
+
 import com.github.javafaker.Faker
+import com.google.protobuf.timestamp.Timestamp
 import zone.overlap.localinfo.v1.local_info.MeasurementSystem.{IMPERIAL, METRIC}
 import zone.overlap.localinfo.v1.local_info.{Address, Language, MeasurementSystem, Weather}
 import zone.overlap.protobuf.coordinate.Coordinate
@@ -12,6 +15,10 @@ import zone.overlap.protobuf.coordinate.Coordinate
 object Fakes {
 
   val faker = new Faker()
+
+  def randomTimestamp(): Timestamp = {
+    Timestamp(faker.date().past(1, TimeUnit.HOURS).toInstant.getEpochSecond, faker.random().nextInt(Int.MaxValue))
+  }
 
   def randomCoordinate(): Coordinate = {
     Coordinate(faker.address().latitude().toDouble, faker.address().longitude().toDouble)
@@ -32,7 +39,7 @@ object Fakes {
       faker.address().city(),
       faker.lorem.word(),
       state,
-      faker.address().zipCodeByState(state),
+      faker.address().zipCode(),
       faker.address().country(),
       faker.address().countryCode()
     )
