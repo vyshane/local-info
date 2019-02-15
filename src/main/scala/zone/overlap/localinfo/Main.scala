@@ -10,7 +10,8 @@ import monix.reactive.Observable
 import mu.node.healthttpd.Healthttpd
 import pureconfig.generic.auto._
 import wvlet.airframe._
-import zone.overlap.localinfo.lib.weather.cache.{CachedWeatherRepository, FoundationDbCache}
+import zone.overlap.localinfo.lib.weather.cache.{CachedWeatherRepository, FoundationDbCache, NoCache}
+import zone.overlap.localinfo.service.GetLocalInfoRpc
 
 import scala.concurrent.duration._
 
@@ -26,9 +27,13 @@ object Main extends App with LazyLogging {
 
     if (config.weatherCacheEnabled) {
       design
-        .bind[FDBDatabase].toLazyInstance(FDBDatabaseFactory.instance().getDatabase(config.fdbClusterFile))
+        .bind[FDBDatabase].toInstance(FDBDatabaseFactory.instance().getDatabase(config.fdbClusterFile))
         .bind[CachedWeatherRepository].toProvider(cachedWeatherRepositoryProvider)
         .bind[FoundationDbCache].toSingletonProvider(foundationDbCacheProvider)
+        .bind[GetLocalInfoRpc].toProvider(cachedGetLocalInfoRpcProvider)
+    } else {
+      design
+        .bind[GetLocalInfoRpc].toInstance(new GetLocalInfoRpc(NoCache))
     }
 
     // Startup
@@ -42,6 +47,10 @@ object Main extends App with LazyLogging {
     lazy val foundationDbCacheProvider: CachedWeatherRepository => FoundationDbCache = { repository =>
       val purgeSignal = Observable.interval(1 minute).map(_ => ())
       FoundationDbCache(repository, purgeSignal, Clock.systemUTC(), 30 minutes)
+    }
+
+    lazy val cachedGetLocalInfoRpcProvider: FoundationDbCache => GetLocalInfoRpc = { foundationDbCache =>
+      new GetLocalInfoRpc(foundationDbCache)
     }
   }
 }
