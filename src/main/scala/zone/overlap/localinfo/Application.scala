@@ -10,6 +10,7 @@ import zone.overlap.localinfo.service.LocalInfoService
 import zone.overlap.localinfo.v1.local_info.LocalInfoGrpcMonix
 
 trait Application extends LazyLogging {
+
   private val config = bind[Config]
   private val healthttpd = bind[Healthttpd]
   private val localInfoService = bind[LocalInfoService]

@@ -7,6 +7,8 @@ case class Config(
     statusPort: Int,
     locationIqToken: String,
     openWeatherMapApiKey: String,
+    weatherCacheEnabled: Boolean,
+    weatherCacheTtl: Int,
     fdbClusterFile: String,
     fdbKeySpaceDirectory: String
 )

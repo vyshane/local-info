@@ -80,7 +80,7 @@ class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
           .forEach(r => store.deleteRecord(r.getPrimaryKey))
           .join()
 
-        null
+        null // Record Layer is a Java library and returning null is a thing in Javaland
       }
     }
   }
