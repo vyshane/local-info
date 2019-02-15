@@ -28,9 +28,9 @@ object Main extends App with LazyLogging {
     if (config.weatherCacheEnabled) {
       design
         .bind[FDBDatabase].toInstance(FDBDatabaseFactory.instance().getDatabase(config.fdbClusterFile))
-        .bind[CachedWeatherRepository].toProvider(cachedWeatherRepositoryProvider)
+        .bind[CachedWeatherRepository].toSingletonProvider(cachedWeatherRepositoryProvider)
         .bind[FoundationDbCache].toSingletonProvider(foundationDbCacheProvider)
-        .bind[GetLocalInfoRpc].toProvider(cachedGetLocalInfoRpcProvider)
+        .bind[GetLocalInfoRpc].toSingletonProvider(cachedGetLocalInfoRpcProvider)
     } else {
       design
         .bind[GetLocalInfoRpc].toInstance(new GetLocalInfoRpc(NoCache))
