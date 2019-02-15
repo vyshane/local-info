@@ -47,7 +47,7 @@ class CachedWeatherRepositorySpec
     "asked to delete records older than an instant" should {
       "delete records older than the instant" in {
         val now = Instant.now()
-        val cachedWeather = randomCachedWeather().withRetrievedAt(Timestamp(now.getEpochSecond))
+        val cachedWeather = randomCachedWeather().withCachedAt(Timestamp(now.getEpochSecond))
         val result = for {
           _ <- repository.save(cachedWeather)
           found <- repository.get(cachedWeather.localityKey)
@@ -61,7 +61,7 @@ class CachedWeatherRepositorySpec
       }
       "not delete records created more recently than the instant" in {
         val now = Instant.now()
-        val cachedWeather = randomCachedWeather().withRetrievedAt(Timestamp(now.getEpochSecond))
+        val cachedWeather = randomCachedWeather().withCachedAt(Timestamp(now.getEpochSecond))
         val result = for {
           _ <- repository.save(cachedWeather)
           found <- repository.get(cachedWeather.localityKey)

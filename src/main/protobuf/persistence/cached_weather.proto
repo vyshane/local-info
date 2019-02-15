@@ -20,7 +20,7 @@ message CachedWeather {
   string locality_key = 1 [(com.apple.foundationdb.record.field).primary_key = true];
 
   overlap.localinfo.v1.Weather weather = 2;
-  google.protobuf.Timestamp retrieved_at = 3;
+  google.protobuf.Timestamp cached_at = 3;
 }
 
 message UnionDescriptor {

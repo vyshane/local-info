@@ -50,7 +50,7 @@ case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
   }
 
   private def wasRetrievedAfter(cachedWeather: CachedWeather)(instant: Instant): Boolean = {
-    cachedWeather.retrievedAt
+    cachedWeather.cachedAt
       .map(t => t.seconds > instant.getEpochSecond)
       .getOrElse(false)
   }

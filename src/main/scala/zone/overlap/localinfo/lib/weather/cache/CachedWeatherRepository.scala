@@ -21,11 +21,11 @@ class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
 
   private val recordMetaData = {
     val metaDataBuilder = RecordMetaData.newBuilder().setRecords(CachedWeatherProto.getDescriptor)
-    val retrievedAtIndex = new Index(
-      "retrieved_at_index",
-      field("retrieved_at").nest("seconds")
+    val cachedAtIndex = new Index(
+      "cached_at_index",
+      field("cached_at").nest("seconds")
     )
-    metaDataBuilder.addIndex("CachedWeather", retrievedAtIndex)
+    metaDataBuilder.addIndex("CachedWeather", cachedAtIndex)
     metaDataBuilder.build()
   }
 
@@ -70,7 +70,7 @@ class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
         val query = RecordQuery
           .newBuilder()
           .setRecordType("CachedWeather")
-          .setFilter(Query.field("retrieved_at") matches {
+          .setFilter(Query.field("cached_at") matches {
             Query.field("seconds") lessThan instant.getEpochSecond
           })
           .build()
