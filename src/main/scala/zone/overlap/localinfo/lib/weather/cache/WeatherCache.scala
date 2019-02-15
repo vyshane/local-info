@@ -2,10 +2,14 @@
 
 package zone.overlap.localinfo.lib.weather.cache
 import java.time.{Clock, Instant}
+
+import com.google.protobuf.timestamp.Timestamp
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
 import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
+import zone.overlap.localinfo.v1.local_info.Weather
+
 import scala.concurrent.duration.Duration
 
 sealed trait WeatherCache {}
@@ -29,6 +33,16 @@ case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
           wasRetrievedAfter(cw)(cutoff)
         }
       }
+  }
+
+  def put(localityKey: String, weather: Weather): Task[Unit] = {
+    cachedWeatherRepository.save(
+      CachedWeather(
+        localityKey,
+        Option(weather),
+        Option(Timestamp(Instant.now(clock).getEpochSecond))
+      )
+    )
   }
 
   private def purgeExpiredItems(): Task[Unit] = {
