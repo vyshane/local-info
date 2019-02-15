@@ -18,7 +18,7 @@ trait Application extends LazyLogging {
   def run(): Unit = {
     healthttpd.startAndIndicateNotReady()
 
-    logger.info(s"Weather cache is ${if (config.weatherCacheEnabled) "enabled" else "disabled" }")
+    logger.info(s"Weather cache is ${if (config.weatherCacheEnabled) cacheEnabledInfo(config) else "disabled"}")
     logger.info("Starting gRPC server")
 
     val grpcServer = NettyServerBuilder
@@ -34,5 +34,9 @@ trait Application extends LazyLogging {
 
     healthttpd.indicateReady()
     grpcServer.awaitTermination()
+  }
+
+  private def cacheEnabledInfo(config: Config): String = {
+    s"enabled with a ${config.weatherCacheTtl} seconds ttl"
   }
 }
