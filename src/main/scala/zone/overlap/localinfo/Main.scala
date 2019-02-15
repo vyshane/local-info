@@ -45,9 +45,9 @@ object Main extends App with LazyLogging {
     new CachedWeatherRepository(db, config.fdbKeySpaceDirectory)
   }
 
-  private val foundationDbCacheProvider: CachedWeatherRepository => FoundationDbCache = { repository =>
+  private val foundationDbCacheProvider: (CachedWeatherRepository, Config) => FoundationDbCache = { (repository, config) =>
     val purgeSignal = Observable.interval(1 minute).map(_ => ())
-    FoundationDbCache(repository, purgeSignal, Clock.systemUTC(), 30 minutes)
+    FoundationDbCache(repository, purgeSignal, Clock.systemUTC(), config.weatherCacheTtl seconds)
   }
 
   private val cachedGetLocalInfoRpcProvider: FoundationDbCache => GetLocalInfoRpc = { foundationDbCache =>
