@@ -3,12 +3,10 @@
 package zone.overlap.localinfo.lib.weather.cache
 
 import java.time.Instant
-
 import com.google.protobuf.timestamp.Timestamp
 import org.scalatest.{AsyncWordSpec, BeforeAndAfterEach, Matchers}
 import monix.execution.Scheduler.Implicits.global
 import zone.overlap.localinfo.util.Fakes._
-
 import scala.concurrent.Await
 import scala.concurrent.duration._
 

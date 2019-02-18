@@ -12,7 +12,6 @@ import pureconfig.generic.auto._
 import wvlet.airframe._
 import zone.overlap.localinfo.lib.weather.cache.{CachedWeatherRepository, FoundationDbCache, NoCache}
 import zone.overlap.localinfo.service.GetLocalInfoRpc
-
 import scala.concurrent.duration._
 
 object Main extends App with LazyLogging {

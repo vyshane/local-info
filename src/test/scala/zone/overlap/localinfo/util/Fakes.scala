@@ -27,6 +27,10 @@ object Fakes {
     Coordinate(faker.address().latitude().toDouble, faker.address().longitude().toDouble)
   }
 
+  def randomLocalityKey(): String = {
+    generateLocalityKey(randomLanguage(), randomMeasurementSystem(), randomAddress()).get
+  }
+
   def randomAddress(): Address = {
     val streetSuffix = faker.address().streetSuffix()
     val osmCompoundKey = s"${streetSuffix}:${faker.random().nextInt(100000, 10000000)}"

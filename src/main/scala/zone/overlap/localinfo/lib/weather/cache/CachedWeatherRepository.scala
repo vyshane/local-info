@@ -3,7 +3,6 @@
 package zone.overlap.localinfo.lib.weather.cache
 
 import java.time.Instant
-
 import com.apple.foundationdb.record.RecordMetaData
 import com.apple.foundationdb.record.metadata.Index
 import com.apple.foundationdb.record.metadata.Key.Expressions._
@@ -19,7 +18,7 @@ import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 
 class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
 
-  private val recordMetaData = {
+  private lazy val recordMetaData = {
     val metaDataBuilder = RecordMetaData.newBuilder().setRecords(CachedWeatherProto.getDescriptor)
     val cachedAtIndex = new Index(
       "cached_at_index",
@@ -29,7 +28,7 @@ class CachedWeatherRepository(db: FDBDatabase, keySpaceDirectoryName: String) {
     metaDataBuilder.build()
   }
 
-  val keySpacePath = {
+  private lazy val keySpacePath = {
     val keySpace = new KeySpace(
       new KeySpaceDirectory(keySpaceDirectoryName, KeySpaceDirectory.KeyType.STRING, keySpaceDirectoryName)
     )
