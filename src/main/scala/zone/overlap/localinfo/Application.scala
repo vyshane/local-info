@@ -9,7 +9,7 @@ import wvlet.airframe._
 import zone.overlap.localinfo.service.LocalInfoService
 import zone.overlap.localinfo.v1.local_info.LocalInfoGrpcMonix
 
-trait Application extends LazyLogging {
+trait Application extends LazyLogging with Scheduling {
 
   private val config = bind[Config]
   private val healthttpd = bind[Healthttpd]
@@ -30,6 +30,7 @@ trait Application extends LazyLogging {
     sys.ShutdownHookThread {
       grpcServer.shutdown()
       healthttpd.stop()
+      io.shutdown()
     }
 
     healthttpd.indicateReady()

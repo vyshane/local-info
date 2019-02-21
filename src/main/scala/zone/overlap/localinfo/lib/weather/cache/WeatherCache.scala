@@ -7,6 +7,7 @@ import com.google.protobuf.timestamp.Timestamp
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
+import zone.overlap.localinfo.Scheduling
 import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.v1.local_info.Weather
 import scala.concurrent.duration.Duration
@@ -19,9 +20,10 @@ case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
                              purgeSignal: Observable[Unit],
                              clock: Clock,
                              ttl: Duration)
-    extends WeatherCache {
+    extends WeatherCache
+    with Scheduling {
 
-  purgeSignal.foreach(_ => purgeExpiredItems())
+  purgeSignal.executeOn(io).foreach(_ => purgeExpiredItems())
 
   def get(localityKey: String): Task[Option[CachedWeather]] = {
     cachedWeatherRepository
