@@ -1,6 +1,7 @@
 // Copyright 2019 Vy-Shane Xie
 
 package zone.overlap.localinfo.lib.weather
+
 import com.softwaremill.sttp._
 import io.circe.Json
 import monix.eval.Task
@@ -41,7 +42,7 @@ class OpenWeatherMapClient(httpGetJson: Uri => Task[Json])(apiKey: String) exten
     for {
       json <- httpGetJson(uri)
       w <- decodeCurrentWeather(json)
-    } yield w
+    } yield w.withLanguage(language).withMeasurementSystem(measurementSystem)
   }
 
   private def fetchTodaysForecastTemperatures(coordinate: Coordinate,

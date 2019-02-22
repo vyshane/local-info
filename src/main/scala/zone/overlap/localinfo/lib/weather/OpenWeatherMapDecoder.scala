@@ -13,8 +13,20 @@ case class ForecastTemperatures(minimum: Float, maximum: Float)
 object OpenWeatherMapDecoder {
 
   def decodeCurrentWeather(json: Json): Task[Weather] = {
-    // TODO
-    ???
+    val cursor = json.hcursor
+    val weather = for {
+      description <- cursor.downField("weather").downArray.first.get[String]("description")
+      main = cursor.downField("main")
+      temp <- main.get[Float]("temp")
+      humidity <- main.get[Float]("humidity")
+      pressure <- main.get[Float]("pressure")
+      wind = cursor.downField("wind")
+      windSpeed <- wind.get[Float]("speed")
+      windDirection <- wind.get[Float]("deg")
+      cloudCover <- cursor.downField("clouds").get[Float]("all")
+    } yield Weather(description, temp, 0, 0, humidity, pressure, windSpeed, windDirection, cloudCover)
+
+    toTask(weather)
   }
 
   def decodeTodaysForecastTemperatures(json: Json): Task[ForecastTemperatures] = {
@@ -23,14 +35,15 @@ object OpenWeatherMapDecoder {
       .downArray.first // We only need today's forecast
       .downField("temp")
 
-    for {
-      min <- decodeField(temp.get[Float]("min"))
-      max <- decodeField(temp.get[Float]("max"))
-      t <- Task.now(ForecastTemperatures(min, max))
-    } yield t
+    val forecastTemperatures = for {
+      min <- temp.get[Float]("min")
+      max <- temp.get[Float]("max")
+    } yield ForecastTemperatures(min, max)
+
+    toTask(forecastTemperatures)
   }
 
-  def decodeField[B](value: Either[DecodingFailure, B]): Task[B] = {
+  def toTask[B](value: Either[DecodingFailure, B]): Task[B] = {
     fromEither[DecodingFailure, B](decodingFailure => Internal(decodingFailure.getMessage()).exception)(value)
   }
 }
