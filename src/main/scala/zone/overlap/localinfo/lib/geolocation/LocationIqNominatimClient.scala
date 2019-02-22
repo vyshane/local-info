@@ -10,6 +10,9 @@ import zone.overlap.localinfo.v1.local_info.Language.LANGUAGE_UNSPECIFIED
 import zone.overlap.localinfo.v1.local_info.{Address, Language}
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.protobuf.zoom_level.ZoomLevel
+import zone.overlap.protobuf.zoom_level.ZoomLevel.ZOOM_LEVEL_UNSPECIFIED
+
+import scala.util.Try
 
 class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String) extends GeolocationClient {
 
@@ -30,9 +33,14 @@ class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String
     } yield a
   }
 
-  private def toZoomLevelParameter(zoomLevel: ZoomLevel): Option[Int] = {
-    // TODO
-    ???
+  private def toZoomLevelParameter(zoomLevel: ZoomLevel): Option[Int] = zoomLevel match {
+    case ZOOM_LEVEL_UNSPECIFIED =>
+      None
+    case _ =>
+      Try(
+        // Options are LEVEL_0, LEVEL_1, ... LEVEL_19
+        Integer.parseInt(zoomLevel.name.split("_")(1))
+      ).toOption
   }
 
   // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.10 for language parameter format
