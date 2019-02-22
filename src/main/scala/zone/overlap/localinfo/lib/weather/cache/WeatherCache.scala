@@ -12,9 +12,13 @@ import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.v1.local_info.Weather
 import scala.concurrent.duration.Duration
 
-sealed trait WeatherCache {}
+sealed trait WeatherCache {
+  def get(localityKey: String): Task[Option[CachedWeather]]
+}
 
-case object NoCache extends WeatherCache
+case object NoCache extends WeatherCache {
+  override def get(localityKey: String): Task[Option[CachedWeather]] = Task.now(None)
+}
 
 case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
                              purgeSignal: Observable[Unit],
@@ -25,7 +29,7 @@ case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
 
   purgeSignal.executeOn(io).foreach(_ => purgeExpiredItems())
 
-  def get(localityKey: String): Task[Option[CachedWeather]] = {
+  override def get(localityKey: String): Task[Option[CachedWeather]] = {
     cachedWeatherRepository
       .get(localityKey)
       .map {

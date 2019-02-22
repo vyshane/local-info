@@ -2,6 +2,42 @@
 
 package zone.overlap.localinfo.lib.geolocation
 
-class LocationIqNominatimClient extends GeolocationClient {
+import com.softwaremill.sttp._
+import io.circe.Json
+import monix.eval.Task
+import zone.overlap.localinfo.lib.geolocation.NominatimAddressDecoder._
+import zone.overlap.localinfo.v1.local_info.Language.LANGUAGE_UNSPECIFIED
+import zone.overlap.localinfo.v1.local_info.{Address, Language}
+import zone.overlap.protobuf.coordinate.Coordinate
+import zone.overlap.protobuf.zoom_level.ZoomLevel
 
+class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String) extends GeolocationClient {
+
+  val apiBaseUrl = "http://us1.locationiq.com/v1/reverse.php?source=nom&key=${apiToken}&format=json&addressdetails=1"
+
+  override def getAddress(coordinate: Coordinate, zoomLevel: ZoomLevel, language: Language): Task[Address] = {
+    val languageParameter = toLanguageParameter(language).map(l => s"&accept-language=$l").getOrElse("")
+    val zoomParameter = toZoomLevelParameter(zoomLevel).map(z => s"&zoom=$z").getOrElse("")
+
+    val uri = Uri(
+      uri"${apiBaseUrl}" +
+        s"&lat=${coordinate.latitude}&lon=${coordinate.longitude}${languageParameter}${zoomParameter}"
+    )
+
+    for {
+      json <- httpGetJson(uri)
+      a <- decodeAddress(json)
+    } yield a
+  }
+
+  private def toZoomLevelParameter(zoomLevel: ZoomLevel): Option[Int] = {
+    // TODO
+    ???
+  }
+
+  // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.10 for language parameter format
+  private def toLanguageParameter(language: Language): Option[String] = language match {
+    case LANGUAGE_UNSPECIFIED => None
+    case _                    => Some(language.name.toLowerCase.replace("_", "-"))
+  }
 }

@@ -3,58 +3,60 @@
 package zone.overlap.localinfo.lib.weather
 import com.softwaremill.sttp._
 import io.circe.Json
-import io.circe.parser._
 import monix.eval.Task
-import zone.overlap.localinfo.lib.errors.Internal
-import zone.overlap.localinfo.lib.utils.TaskUtils._
 import zone.overlap.localinfo.lib.weather.OpenWeatherMapDecoder._
 import zone.overlap.localinfo.v1.local_info.Language._
 import zone.overlap.localinfo.v1.local_info.MeasurementSystem.{IMPERIAL, METRIC}
 import zone.overlap.localinfo.v1.local_info.{Language, MeasurementSystem, Weather}
 import zone.overlap.protobuf.coordinate.Coordinate
 
-class OpenWeatherMapClient(apiKey: String) extends WeatherClient {
+class OpenWeatherMapClient(httpGetJson: Uri => Task[Json])(apiKey: String) extends WeatherClient {
 
-  implicit val backend = HttpURLConnectionBackend()
-  val apiBaseUrl = "http://api.openweathermap.org/data/2.5"
+  val apiBaseUrl = "https://api.openweathermap.org/data/2.5"
 
   override def getCurrentWeather(coordinate: Coordinate,
                                  language: Language,
                                  measurementSystem: MeasurementSystem): Task[Weather] = {
-    ???
+
+    val currentConditions = fetchCurrentConditions(coordinate, language, measurementSystem)
+    // OpenWeatherMap provides the day's minimum and maximum temparatures through the daily forecast API
+    val forecastTemperatures = fetchTodaysForecastTemperatures(coordinate, language, measurementSystem)
+
+    // Parallel requests
+    Task.zipMap2(currentConditions, forecastTemperatures) { (weather, forecastTemperatures) =>
+      weather
+        .withMinimumTemperature(forecastTemperatures.minimum)
+        .withMaximumTemperature(forecastTemperatures.maximum)
+    }
   }
 
   private def fetchCurrentConditions(coordinate: Coordinate,
                                      language: Language,
                                      measurementSystem: MeasurementSystem): Task[Weather] = {
-    val uri = s"${apiBaseUrl}/weather" +
-      s"?apikey=$apiKey&lat=${coordinate.latitude}&lon=${coordinate.longitude}" +
-      localeUriParameters(language, measurementSystem)
-
-    ???
-  }
-
-  private def fetchForecastTemperatures(coordinate: Coordinate,
-                                        language: Language,
-                                        measurementSystem: MeasurementSystem): Task[ForecastTemperatures] = {
-    val numberOfDays = 1 // Max 16
-    val uri = s"${apiBaseUrl}/forecast/daily" +
-      s"?apikey=$apiKey&lat=${coordinate.latitude}&lon=${coordinate.longitude}" +
-      localeUriParameters(language, measurementSystem)
-
+    val uri = Uri(
+      uri"${apiBaseUrl}/weather" +
+        s"?apikey=$apiKey&lat=${coordinate.latitude}&lon=${coordinate.longitude}" +
+        localeUriParameters(language, measurementSystem)
+    )
     for {
-      body <- get(uri)
-      json <- parseJson(body)
-      t <- decodeForecastTemperatures(json)
+      json <- httpGetJson(uri)
+      w <- decodeCurrentWeather(json)
+    } yield w
+  }
+
+  private def fetchTodaysForecastTemperatures(coordinate: Coordinate,
+                                              language: Language,
+                                              measurementSystem: MeasurementSystem): Task[ForecastTemperatures] = {
+    val numberOfDays = 1 // Max 16
+    val uri = Uri(
+      uri"${apiBaseUrl}/forecast/daily" +
+        s"?apikey=$apiKey&lat=${coordinate.latitude}&lon=${coordinate.longitude}" +
+        localeUriParameters(language, measurementSystem)
+    )
+    for {
+      json <- httpGetJson(uri)
+      t <- decodeTodaysForecastTemperatures(json)
     } yield t
-  }
-
-  private def get(uri: String): Task[Either[String, String]] = {
-    Task(sttp.get(uri"$uri").send().body)
-  }
-
-  private def parseJson(body: Either[String, String]): Task[Json] = {
-    fromEither[java.io.Serializable, Json](m => Internal(m.toString).exception)(body.flatMap(parse))
   }
 
   private def localeUriParameters(language: Language, measurementSystem: MeasurementSystem): String = {

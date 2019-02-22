@@ -6,13 +6,23 @@ import zone.overlap.localinfo.lib.utils.TaskUtils._
 import io.circe.{DecodingFailure, Json}
 import monix.eval.Task
 import zone.overlap.localinfo.lib.errors.Internal
+import zone.overlap.localinfo.v1.local_info.Weather
 
 case class ForecastTemperatures(minimum: Float, maximum: Float)
 
 object OpenWeatherMapDecoder {
 
-  def decodeForecastTemperatures(json: Json): Task[ForecastTemperatures] = {
-    val temp = json.hcursor.downField("list").downArray.first.downField("temp")
+  def decodeCurrentWeather(json: Json): Task[Weather] = {
+    // TODO
+    ???
+  }
+
+  def decodeTodaysForecastTemperatures(json: Json): Task[ForecastTemperatures] = {
+    val temp = json.hcursor
+      .downField("list")
+      .downArray.first // We only need today's forecast
+      .downField("temp")
+
     for {
       min <- decodeField(temp.get[Float]("min"))
       max <- decodeField(temp.get[Float]("max"))

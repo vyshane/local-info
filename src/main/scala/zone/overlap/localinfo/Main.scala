@@ -3,13 +3,15 @@
 package zone.overlap.localinfo
 
 import java.time.Clock
-
 import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBDatabaseFactory}
 import com.typesafe.scalalogging.LazyLogging
 import monix.reactive.Observable
 import mu.node.healthttpd.Healthttpd
 import pureconfig.generic.auto._
 import wvlet.airframe._
+import zone.overlap.localinfo.lib.geolocation.{GeolocationClient, LocationIqNominatimClient}
+import zone.overlap.localinfo.lib.http.HttpClient._
+import zone.overlap.localinfo.lib.weather.{OpenWeatherMapClient, WeatherClient}
 import zone.overlap.localinfo.lib.weather.cache.{CachedWeatherRepository, FoundationDbCache, NoCache}
 import zone.overlap.localinfo.service.GetLocalInfoRpc
 import scala.concurrent.duration._
@@ -21,8 +23,11 @@ object Main extends App with LazyLogging {
 
     // Wire up dependencies
     val design = newDesign
+      .bind[Clock].toInstance(Clock.systemUTC())
       .bind[Config].toInstance(config)
       .bind[Healthttpd].toInstance(Healthttpd(config.statusPort))
+      .bind[WeatherClient].toInstance(new OpenWeatherMapClient(httpGetJson)(config.openWeatherMapApiKey))
+      .bind[GeolocationClient].toInstance(new LocationIqNominatimClient(httpGetJson)(config.locationIqToken))
 
     if (config.weatherCacheEnabled) {
       design
@@ -32,7 +37,7 @@ object Main extends App with LazyLogging {
         .bind[GetLocalInfoRpc].toSingletonProvider(cachedGetLocalInfoRpcProvider)
     } else {
       design
-        .bind[GetLocalInfoRpc].toInstance(new GetLocalInfoRpc(NoCache))
+        .bind[GetLocalInfoRpc].toSingletonProvider(unCachedGetLocalInfoRpcProvider)
     }
 
     // Start application
@@ -44,12 +49,20 @@ object Main extends App with LazyLogging {
     new CachedWeatherRepository(db, config.fdbKeySpaceDirectory)
   }
 
-  private val foundationDbCacheProvider: (CachedWeatherRepository, Config) => FoundationDbCache = { (repository, config) =>
-    val purgeSignal = Observable.interval(1 minute).map(_ => ())
-    FoundationDbCache(repository, purgeSignal, Clock.systemUTC(), config.weatherCacheTtl seconds)
+  private val foundationDbCacheProvider: (CachedWeatherRepository, Config, Clock) => FoundationDbCache = {
+    (repository, config, clock) =>
+      val purgeSignal = Observable.interval(1 minute).map(_ => ())
+      FoundationDbCache(repository, purgeSignal, clock, config.weatherCacheTtl seconds)
   }
 
-  private val cachedGetLocalInfoRpcProvider: FoundationDbCache => GetLocalInfoRpc = { foundationDbCache =>
-    new GetLocalInfoRpc(foundationDbCache)
+  private val unCachedGetLocalInfoRpcProvider: (GeolocationClient, WeatherClient, Clock) => GetLocalInfoRpc = {
+    (geolocationClient, weatherClient, clock) =>
+      new GetLocalInfoRpc(geolocationClient, weatherClient, NoCache, clock)
+  }
+
+  private val cachedGetLocalInfoRpcProvider
+    : (GeolocationClient, WeatherClient, FoundationDbCache, Clock) => GetLocalInfoRpc = {
+    (geolocationClient, weatherClient, foundationDbCache, clock) =>
+      new GetLocalInfoRpc(geolocationClient, weatherClient, foundationDbCache, clock)
   }
 }
