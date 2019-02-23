@@ -29,6 +29,8 @@ libraryDependencies ++= Seq(
   "mu.node" %% "healthttpd" % "0.1.0",
   // Sunrise and sunset calculations
   "net.time4j" % "time4j-base" % "5.2",
+  // Time zone geolocation
+  "net.iakovlev" % "timeshape" % "2018d.6",
   // Logging
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",

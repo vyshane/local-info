@@ -7,6 +7,7 @@ import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBData
 import com.typesafe.scalalogging.LazyLogging
 import monix.reactive.Observable
 import mu.node.healthttpd.Healthttpd
+import net.iakovlev.timeshape.TimeZoneEngine
 import pureconfig.generic.auto._
 import wvlet.airframe._
 import zone.overlap.localinfo.lib.geolocation.{GeolocationClient, LocationIqNominatimClient}
@@ -28,6 +29,7 @@ object Main extends App with LazyLogging {
       .bind[Healthttpd].toInstance(Healthttpd(config.statusPort))
       .bind[WeatherClient].toInstance(new OpenWeatherMapClient(httpGetJson)(config.openWeatherMapApiKey))
       .bind[GeolocationClient].toInstance(new LocationIqNominatimClient(httpGetJson)(config.locationIqToken))
+      .bind[TimeZoneEngine].toInstance(TimeZoneEngine.initialize())
 
     if (config.weatherCacheEnabled) {
       design
@@ -55,14 +57,15 @@ object Main extends App with LazyLogging {
       FoundationDbCache(repository, purgeSignal, clock, config.weatherCacheTtl seconds)
   }
 
-  private val unCachedGetLocalInfoRpcProvider: (GeolocationClient, WeatherClient, Clock) => GetLocalInfoRpc = {
-    (geolocationClient, weatherClient, clock) =>
-      new GetLocalInfoRpc(geolocationClient, weatherClient, NoCache, clock)
+  private val unCachedGetLocalInfoRpcProvider
+    : (GeolocationClient, WeatherClient, TimeZoneEngine, Clock) => GetLocalInfoRpc = {
+    (geolocationClient, weatherClient, timeZoneEngine, clock) =>
+      new GetLocalInfoRpc(geolocationClient, weatherClient, NoCache, timeZoneEngine, clock)
   }
 
   private val cachedGetLocalInfoRpcProvider
-    : (GeolocationClient, WeatherClient, FoundationDbCache, Clock) => GetLocalInfoRpc = {
-    (geolocationClient, weatherClient, foundationDbCache, clock) =>
-      new GetLocalInfoRpc(geolocationClient, weatherClient, foundationDbCache, clock)
+    : (GeolocationClient, WeatherClient, FoundationDbCache, TimeZoneEngine, Clock) => GetLocalInfoRpc = {
+    (geolocationClient, weatherClient, foundationDbCache, timeZoneEngine, clock) =>
+      new GetLocalInfoRpc(geolocationClient, weatherClient, foundationDbCache, timeZoneEngine, clock)
   }
 }
