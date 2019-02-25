@@ -13,6 +13,7 @@ import zone.overlap.localinfo.lib.weather.cache.{NoCache, WeatherCache}
 import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.v1.local_info._
 import zone.overlap.protobuf.coordinate.Coordinate
+import scala.compat.java8.OptionConverters._
 
 class GetLocalInfoRpc(geolocationClient: GeolocationClient,
                       weatherClient: WeatherClient,
@@ -27,7 +28,7 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
       address <- geolocationClient.getAddress(request.coordinate.get, request.zoomLevel, request.language)
       weather <- getWeather(request.coordinate.get, address, request.language, request.measurementSystem)
       sun = SunCalculator.calculateSun(request.coordinate.get, 0, ZonedDateTime.now(clock))
-//      timezone <-
+      timezone = timeZoneEngine.query(request.coordinate.get.latitude, request.coordinate.get.longitude).asScala
     } yield ()
 
     ???
