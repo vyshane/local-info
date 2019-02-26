@@ -13,7 +13,7 @@ case class Sun(rise: Option[Timestamp], set: Option[Timestamp])
 
 object SunCalculator {
 
-  def calculateSun(forDay: LocalDate, coordinate: Coordinate, altitudeMeters: Int): Sun = {
+  def calculateSun(forDay: LocalDate, coordinate: Coordinate, altitudeMeters: Int = 0): Sun = {
     val solarTime =
       SolarTime.ofLocation(coordinate.latitude, coordinate.longitude, altitudeMeters, StdSolarCalculator.TIME4J)
     val calendarDate = PlainDate.from(forDay)
