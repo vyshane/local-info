@@ -2,7 +2,7 @@
 
 package zone.overlap.localinfo.lib.time
 
-import java.time.ZonedDateTime
+import java.time.LocalDate
 import com.google.protobuf.timestamp.Timestamp
 import net.time4j.{Moment, PlainDate}
 import net.time4j.calendar.astro.{SolarTime, StdSolarCalculator}
@@ -13,10 +13,10 @@ case class Sun(rise: Option[Timestamp], set: Option[Timestamp])
 
 object SunCalculator {
 
-  def calculateSun(coordinate: Coordinate, altitudeMeters: Int, zonedDateTime: ZonedDateTime): Sun = {
+  def calculateSun(forDay: LocalDate, coordinate: Coordinate, altitudeMeters: Int): Sun = {
     val solarTime =
       SolarTime.ofLocation(coordinate.latitude, coordinate.longitude, altitudeMeters, StdSolarCalculator.TIME4J)
-    val calendarDate = PlainDate.from(zonedDateTime.toLocalDate)
+    val calendarDate = PlainDate.from(forDay)
 
     def toTimestamp(moment: Moment) = Timestamp(moment.getPosixTime, moment.getNanosecond())
 

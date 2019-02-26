@@ -2,7 +2,7 @@
 
 package zone.overlap.localinfo.service
 
-import java.time.{Clock, ZonedDateTime}
+import java.time.{Clock, LocalDate}
 import monix.eval.Task
 import net.iakovlev.timeshape.TimeZoneEngine
 import zone.overlap.localinfo.lib.geolocation.GeolocationClient
@@ -27,7 +27,7 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
     for {
       address <- geolocationClient.getAddress(request.coordinate.get, request.zoomLevel, request.language)
       weather <- getWeather(request.coordinate.get, address, request.language, request.measurementSystem)
-      sun = SunCalculator.calculateSun(request.coordinate.get, 0, ZonedDateTime.now(clock))
+      sun = SunCalculator.calculateSun(LocalDate.now(clock), request.coordinate.get, 0)
       timezone = timeZoneEngine.query(request.coordinate.get.latitude, request.coordinate.get.longitude).asScala
     } yield ()
 
