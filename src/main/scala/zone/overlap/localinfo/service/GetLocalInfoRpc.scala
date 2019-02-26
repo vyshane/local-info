@@ -23,15 +23,14 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
 
   def handle(request: GetLocalInfoRequest): Task[LocalInfo] = {
     // TODO: Validate request
+    val coordinate = request.coordinate.get
 
     for {
-      address <- geolocationClient.getAddress(request.coordinate.get, request.zoomLevel, request.language)
-      weather <- getWeather(request.coordinate.get, address, request.language, request.measurementSystem)
-      sun = SunCalculator.calculateSun(LocalDate.now(clock), request.coordinate.get, 0)
-      timezone = timeZoneEngine.query(request.coordinate.get.latitude, request.coordinate.get.longitude).asScala
-    } yield ()
-
-    ???
+      address <- geolocationClient.getAddress(coordinate, request.zoomLevel, request.language)
+      weather <- getWeather(coordinate, address, request.language, request.measurementSystem)
+      sun = SunCalculator.calculateSun(LocalDate.now(clock), coordinate)
+      timezone = timeZoneEngine.query(coordinate.latitude, coordinate.longitude).asScala.map(_.getId).getOrElse("")
+    } yield LocalInfo(Some(coordinate), Some(address), timezone, sun.rise, sun.set)
   }
 
   private def getWeather(coordinate: Coordinate,
