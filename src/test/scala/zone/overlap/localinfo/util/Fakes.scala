@@ -3,12 +3,11 @@
 package zone.overlap.localinfo.util
 
 import java.util.concurrent.TimeUnit
-
 import com.github.javafaker.Faker
 import com.google.protobuf.timestamp.Timestamp
 import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.v1.local_info.MeasurementSystem.{IMPERIAL, METRIC}
-import zone.overlap.localinfo.v1.local_info.{Address, Language, MeasurementSystem, Weather}
+import zone.overlap.localinfo.v1.local_info._
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.localinfo.lib.weather.cache._
 
@@ -28,32 +27,21 @@ object Fakes {
   }
 
   def randomLocalityKey(): String = {
-    generateLocalityKey(randomLanguage(), randomMeasurementSystem(), randomAddress()).get
+    generateLocalityKey(randomPlace(), randomLanguage(), randomMeasurementSystem()).get
   }
 
-  def randomAddress(): Address = {
-    val streetSuffix = faker.address().streetSuffix()
-    val osmCompoundKey = s"${streetSuffix}:${faker.random().nextInt(100000, 10000000)}"
-    val state = faker.address().state()
-
-    val address = Address(
-      s"//locationinfo.api.overlap.zone/addresses/$osmCompoundKey",
-      "",
-      faker.address().streetAddressNumber(),
-      streetSuffix,
-      faker.lorem().word(),
-      faker.lorem().word(),
-      faker.address().city(),
-      faker.lorem.word(),
-      state,
-      faker.address().zipCode(),
-      faker.address().country(),
-      faker.address().countryCode()
+  def randomPlace(): Place = {
+    val address = faker.address()
+    val resourceName =
+      s"places/${address.countryCode()}.${address.state()}.${address.city()}"
+        .toLowerCase().replaceAll("[^\\p{L}\\p{Nd}]+", "_")
+    Place(
+      resourceName,
+      address.city(),
+      s"${address.city()}, ${address.state()}, ${address.country()}",
+      address.country(),
+      address.countryCode()
     )
-
-    address.withDisplayName(
-      s"${address.number} ${address.street}, ${address.suburb}, ${address.cityDistrict}, " +
-        s"${address.city}, ${address.county}, ${address.state}, ${address.postcode}, ${address.country}")
   }
 
   def randomLanguage(): Language = {
@@ -89,7 +77,7 @@ object Fakes {
   def randomCachedWeather(): CachedWeather = {
     val language = randomLanguage()
     val measurementSystem = randomMeasurementSystem()
-    val localityKey = generateLocalityKey(language, measurementSystem, randomAddress())
+    val localityKey = generateLocalityKey(randomPlace(), language, measurementSystem)
     CachedWeather(localityKey.get, Option(randomWeather(measurementSystem)), Option(randomTimestamp()))
   }
 

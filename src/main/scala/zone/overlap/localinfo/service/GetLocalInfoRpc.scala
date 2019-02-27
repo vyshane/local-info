@@ -13,6 +13,7 @@ import zone.overlap.localinfo.lib.weather.cache.{NoCache, WeatherCache}
 import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
 import zone.overlap.localinfo.v1.local_info._
 import zone.overlap.protobuf.coordinate.Coordinate
+import zone.overlap.protobuf.zoom_level.ZoomLevel
 import scala.compat.java8.OptionConverters._
 
 class GetLocalInfoRpc(geolocationClient: GeolocationClient,
@@ -24,20 +25,21 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
   def handle(request: GetLocalInfoRequest): Task[LocalInfo] = {
     // TODO: Validate request
     val coordinate = request.coordinate.get
+    val zoomLevel = ZoomLevel.ZOOM_LEVEL_UNSPECIFIED // TODO: Enforce range 5 - 14
 
     for {
-      address <- geolocationClient.getAddress(coordinate, request.zoomLevel, request.language)
-      weather <- getWeather(coordinate, address, request.language, request.measurementSystem)
+      place <- geolocationClient.getPlace(coordinate, request.zoomLevel, request.language)
+      weather <- getWeather(coordinate, place, request.language, request.measurementSystem)
       sun = SunCalculator.calculateSun(LocalDate.now(clock), coordinate)
       timezone = timeZoneEngine.query(coordinate.latitude, coordinate.longitude).asScala.map(_.getId).getOrElse("")
-    } yield LocalInfo(Some(coordinate), Some(address), timezone, sun.rise, sun.set)
+    } yield LocalInfo(Some(coordinate), zoomLevel, Some(place), timezone, sun.rise, sun.set)
   }
 
   private def getWeather(coordinate: Coordinate,
-                         address: Address,
+                         place: Place,
                          language: Language,
                          measurementSystem: MeasurementSystem): Task[Weather] = {
-    val cachedWeather: Task[Option[CachedWeather]] = generateLocalityKey(language, measurementSystem, address)
+    val cachedWeather: Task[Option[CachedWeather]] = generateLocalityKey(place, language, measurementSystem)
       .map(weatherCache.get)
       .getOrElse(Task.now(None))
 

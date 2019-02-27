@@ -7,7 +7,7 @@ import io.circe.Json
 import monix.eval.Task
 import zone.overlap.localinfo.lib.geolocation.NominatimAddressDecoder._
 import zone.overlap.localinfo.v1.local_info.Language.LANGUAGE_UNSPECIFIED
-import zone.overlap.localinfo.v1.local_info.{Address, Language}
+import zone.overlap.localinfo.v1.local_info.{Language, Place}
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.protobuf.zoom_level.ZoomLevel
 import zone.overlap.protobuf.zoom_level.ZoomLevel.ZOOM_LEVEL_UNSPECIFIED
@@ -17,7 +17,7 @@ class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String
 
   val apiBaseUrl = "http://us1.locationiq.com/v1/reverse.php?source=nom&key=${apiToken}&format=json&addressdetails=1"
 
-  override def getAddress(coordinate: Coordinate, zoomLevel: ZoomLevel, language: Language): Task[Address] = {
+  override def getPlace(coordinate: Coordinate, zoomLevel: ZoomLevel, language: Language): Task[Place] = {
     val languageParameter = toLanguageParameter(language).map(l => s"&accept-language=$l").getOrElse("")
     val zoomParameter = toZoomLevelParameter(zoomLevel).map(z => s"&zoom=$z").getOrElse("")
 
@@ -28,8 +28,8 @@ class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String
 
     for {
       json <- httpGetJson(uri)
-      a <- decodeAddress(json)
-    } yield a
+      p <- decodePlace(json)
+    } yield p
   }
 
   private def toZoomLevelParameter(zoomLevel: ZoomLevel): Option[Int] = zoomLevel match {

@@ -3,11 +3,11 @@
 package zone.overlap.localinfo.lib.geolocation
 
 import monix.eval.Task
-import zone.overlap.localinfo.v1.local_info.{Address, Language}
+import zone.overlap.localinfo.v1.local_info.{Language, Place}
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.protobuf.zoom_level.ZoomLevel
 
 trait GeolocationClient {
 
-  def getAddress(coordinate: Coordinate, zoomLevel: ZoomLevel, language: Language): Task[Address]
+  def getPlace(coordinate: Coordinate, zoomLevel: ZoomLevel, language: Language): Task[Place]
 }

@@ -1,24 +1,15 @@
 // Copyright 2019 Vy-Shane Xie
 
 package zone.overlap.localinfo.lib.weather
-import zone.overlap.localinfo.v1.local_info.{Address, Language, MeasurementSystem}
+
+import zone.overlap.localinfo.v1.local_info.{Language, MeasurementSystem, Place}
 
 package object cache {
 
-  def generateLocalityKey(language: Language, measurementSystem: MeasurementSystem, address: Address): Option[String] = {
-    if (language == Language.LANGUAGE_UNSPECIFIED) None
-    else if (measurementSystem == MeasurementSystem.MEASUREMENT_SYSTEM_UNSPECIFIED) None
-    else if (address.countryCode.isEmpty) None
-    else if (address.city.isEmpty && address.cityDistrict.isEmpty && address.suburb.isEmpty) None
-    else {
-      val u: String => String = (value) => {
-        if (value.isEmpty) "_"
-        else value
-      }
-      Option(
-        s"/${language.name}/${measurementSystem.name}/${address.countryCode}/${u(address.state)}/${u(address.county)}/" +
-          s"${u(address.city)}/${u(address.cityDistrict)}/${u(address.suburb)}"
-      )
-    }
+  def generateLocalityKey(place: Place, language: Language, measurementSystem: MeasurementSystem): Option[String] = {
+    if (language == Language.LANGUAGE_UNSPECIFIED || measurementSystem == MeasurementSystem.MEASUREMENT_SYSTEM_UNSPECIFIED)
+      None
+    else
+      Some(s"/${place.name}/${language.name}/${measurementSystem.name}")
   }
 }

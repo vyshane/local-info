@@ -8,7 +8,7 @@ import zone.overlap.localinfo.lib.weather.cache.{FoundationDbCache, NoCache}
 class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFactory {
 
   "GetLocalInfoRpc configured with no cache" when {
-    val getLocalInfoRpc = new GetLocalInfoRpc(NoCache)
+//    val getLocalInfoRpc = new GetLocalInfoRpc(NoCache)
 
     "" should {
       "" in {
@@ -21,7 +21,7 @@ class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFact
     class MockableFoundationDbCache extends FoundationDbCache(null, null, null, null)
     val fdbCache = mock[MockableFoundationDbCache]
 
-    val getLocalInfoRpc = new GetLocalInfoRpc(fdbCache)
+//    val getLocalInfoRpc = new GetLocalInfoRpc(fdbCache)
 
     "" should {
       "" in {
