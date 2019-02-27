@@ -32,9 +32,9 @@ object Fakes {
 
   def randomPlace(): Place = {
     val address = faker.address()
+    val format: String => String = name => name.toLowerCase().replaceAll("[^\\p{L}\\p{Nd}]+", "_")
     val resourceName =
-      s"places/${address.countryCode()}.${address.state()}.${address.city()}"
-        .toLowerCase().replaceAll("[^\\p{L}\\p{Nd}]+", "_")
+      s"places/${format(address.countryCode())}.${format(address.state())}.${format(address.city())}"
     Place(
       resourceName,
       address.city(),
