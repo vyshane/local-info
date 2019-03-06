@@ -3,8 +3,10 @@ scalaVersion := "2.12.8"
 
 enablePlugins(JavaAppPackaging)
 
-resolvers += Resolver.bintrayRepo("beyondthelines", "maven")
-resolvers += Resolver.bintrayRepo("vyshane", "maven")
+resolvers ++= Seq(
+  Resolver.bintrayRepo("beyondthelines", "maven"),
+  Resolver.bintrayRepo("vyshane", "maven")
+)
 
 libraryDependencies ++= Seq(
   "org.scala-lang.modules" %% "scala-java8-compat" % "0.9.0",
@@ -31,6 +33,8 @@ libraryDependencies ++= Seq(
   "net.time4j" % "time4j-base" % "5.2",
   // Time zone geolocation
   "net.iakovlev" % "timeshape" % "2018d.6",
+  // Encoding
+  "io.seruco.encoding" % "base62" % "0.1.2",
   // Logging
   "ch.qos.logback" % "logback-classic" % "1.2.3",
   "com.typesafe.scala-logging" %% "scala-logging" % "3.9.0",
