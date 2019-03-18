@@ -6,7 +6,7 @@ import com.softwaremill.sttp._
 import io.circe.Json
 import monix.eval.Task
 import zone.overlap.localinfo.lib.geolocation.NominatimAddressDecoder._
-import zone.overlap.localinfo.v1.local_info.Language.LANGUAGE_UNSPECIFIED
+import zone.overlap.localinfo.v1.local_info.Language.{EN, LANGUAGE_UNSPECIFIED}
 import zone.overlap.localinfo.v1.local_info.{Language, Place}
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.protobuf.zoom_level.ZoomLevel
@@ -15,21 +15,33 @@ import scala.util.Try
 
 class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String) extends GeolocationClient {
 
-  val apiBaseUrl = "http://us1.locationiq.com/v1/reverse.php?source=nom&key=${apiToken}&format=json&addressdetails=1"
-
   override def getPlace(coordinate: Coordinate, zoomLevel: ZoomLevel, language: Language): Task[Place] = {
+    val placeUri = getUri(coordinate, zoomLevel)
+    val fetch = fetchPlace(placeUri)
+
+    language match {
+      case EN => fetch(EN)
+      case _  =>
+        // Also request for the address in English since place resource names
+        // must always be generated from the English translation of the address
+        Task.zipMap2(fetch(EN), fetch(language))(
+          (pEn, p) => p.withName(pEn.name)
+        )
+    }
+  }
+
+  private def fetchPlace(placeUri: Language => Uri)(language: Language): Task[Place] = {
+    httpGetJson(placeUri(language)) flatMap decodePlace
+  }
+
+  private def getUri(coordinate: Coordinate, zoomLevel: ZoomLevel)(language: Language): Uri = {
+    val apiBaseUrl = "http://us1.locationiq.com/v1/reverse.php?source=nom&key=${apiToken}&format=json&addressdetails=1"
     val languageParameter = toLanguageParameter(language).map(l => s"&accept-language=$l").getOrElse("")
     val zoomParameter = toZoomLevelParameter(zoomLevel).map(z => s"&zoom=$z").getOrElse("")
-
-    val uri = Uri(
+    Uri(
       uri"${apiBaseUrl}" +
         s"&lat=${coordinate.latitude}&lon=${coordinate.longitude}${languageParameter}${zoomParameter}"
     )
-
-    for {
-      json <- httpGetJson(uri)
-      p <- decodePlace(json)
-    } yield p
   }
 
   private def toZoomLevelParameter(zoomLevel: ZoomLevel): Option[Int] = zoomLevel match {
