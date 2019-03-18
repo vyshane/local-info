@@ -24,9 +24,9 @@ class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String
       case _  =>
         // Also request for the address in English since place resource names
         // must always be generated from the English translation of the address
-        Task.zipMap2(fetch(EN), fetch(language))(
-          (pEn, p) => p.withName(pEn.name)
-        )
+        Task.zipMap2(fetch(EN), fetch(language)) { (pEn, p) =>
+          p.withName(pEn.name)
+        }
     }
   }
 
