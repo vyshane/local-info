@@ -16,8 +16,8 @@ import scala.util.Try
 class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String) extends GeolocationClient {
 
   override def getPlace(coordinate: Coordinate, zoomLevel: ZoomLevel, language: Language): Task[Place] = {
-    val placeUri = getUri(coordinate, zoomLevel)
-    val fetch = fetchPlace(placeUri)
+    val placeUri = getUri(coordinate, zoomLevel)(_)
+    val fetch = fetchPlace(placeUri)(_)
 
     language match {
       case EN => fetch(EN)
@@ -35,23 +35,39 @@ class LocationIqNominatimClient(httpGetJson: Uri => Task[Json])(apiToken: String
   }
 
   private def getUri(coordinate: Coordinate, zoomLevel: ZoomLevel)(language: Language): Uri = {
-    val apiBaseUrl = "http://us1.locationiq.com/v1/reverse.php?source=nom&key=${apiToken}&format=json&addressdetails=1"
-    val languageParameter = toLanguageParameter(language).map(l => s"&accept-language=$l").getOrElse("")
-    val zoomParameter = toZoomLevelParameter(zoomLevel).map(z => s"&zoom=$z").getOrElse("")
-    Uri(
-      uri"${apiBaseUrl}" +
-        s"&lat=${coordinate.latitude}&lon=${coordinate.longitude}${languageParameter}${zoomParameter}"
-    )
+    val uri = uri"http://us1.locationiq.com/v1/reverse.php"
+      .param("source", "nom")
+      .param("key", apiToken)
+      .param("format", "json")
+      .param("addressdetails", "1")
+      .param("lat", String.valueOf(coordinate.latitude))
+      .param("lon", String.valueOf(coordinate.longitude))
+
+    withZoomLevel(zoomLevel) _ andThen withLang(language) _ apply uri
+  }
+
+  private def withZoomLevel(zoomLevel: ZoomLevel)(uri: Uri): Uri = {
+    toZoomLevelParameter(zoomLevel) match {
+      case None    => uri
+      case Some(z) => uri.param("zoom", String.valueOf(z))
+    }
   }
 
   private def toZoomLevelParameter(zoomLevel: ZoomLevel): Option[Int] = zoomLevel match {
     case ZOOM_LEVEL_UNSPECIFIED =>
       None
     case _ =>
-      Try(
+      Try {
         // Options are LEVEL_0, LEVEL_1, ... LEVEL_19
         Integer.parseInt(zoomLevel.name.split("_")(1))
-      ).toOption
+      } toOption
+  }
+
+  private def withLang(language: Language)(uri: Uri): Uri = {
+    toLanguageParameter(language) match {
+      case None    => uri
+      case Some(l) => uri.param("accept-language", l)
+    }
   }
 
   // See https://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.10 for language parameter format

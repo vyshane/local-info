@@ -34,11 +34,13 @@ class OpenWeatherMapClient(httpGetJson: Uri => Task[Json])(apiKey: String) exten
   private def fetchCurrentConditions(coordinate: Coordinate,
                                      language: Language,
                                      measurementSystem: MeasurementSystem): Task[Weather] = {
-    val uri = Uri(
-      uri"${apiBaseUrl}/weather" +
-        s"?apikey=$apiKey&lat=${coordinate.latitude}&lon=${coordinate.longitude}" +
-        localeUriParameters(language, measurementSystem)
-    )
+    val uri = uri"${apiBaseUrl}/weather"
+      .param("apikey", apiKey)
+      .param("lat", String.valueOf(coordinate.latitude))
+      .param("lon", String.valueOf(coordinate.longitude))
+
+    val uriWithLocale = withLang(language) _ andThen withUnits(measurementSystem) _ apply uri
+
     for {
       json <- httpGetJson(uri)
       w <- decodeCurrentWeather(json)
@@ -48,32 +50,38 @@ class OpenWeatherMapClient(httpGetJson: Uri => Task[Json])(apiKey: String) exten
   private def fetchTodaysForecastTemperatures(coordinate: Coordinate,
                                               language: Language,
                                               measurementSystem: MeasurementSystem): Task[ForecastTemperatures] = {
-    val numberOfDays = 1 // Max 16
-    val uri = Uri(
-      uri"${apiBaseUrl}/forecast/daily" +
-        s"?apikey=$apiKey&lat=${coordinate.latitude}&lon=${coordinate.longitude}" +
-        localeUriParameters(language, measurementSystem)
-    )
+    val uri = uri"${apiBaseUrl}/forecast/daily"
+      .param("apikey", apiKey)
+      .param("lat", String.valueOf(coordinate.latitude))
+      .param("lon", String.valueOf(coordinate.longitude))
+      .param("cnt", "1") // Number of days
+
+    val uriWithLocale = withLang(language) _ andThen withUnits(measurementSystem) _ apply uri
+
     for {
-      json <- httpGetJson(uri)
+      json <- httpGetJson(uriWithLocale)
       t <- decodeTodaysForecastTemperatures(json)
     } yield t
   }
 
-  private def localeUriParameters(language: Language, measurementSystem: MeasurementSystem): String = {
-    val unitsParam = toSupportedUnitsParameter(measurementSystem)
-      .map(u => s"&units=$u")
-      .getOrElse("")
-    val langParam = toSupportedLangParameter(language)
-      .map(l => s"&lang=$l")
-      .getOrElse("")
-    unitsParam + langParam
+  private def withUnits(measurementSystem: MeasurementSystem)(uri: Uri): Uri = {
+    toSupportedUnitsParameter(measurementSystem) match {
+      case None    => uri
+      case Some(u) => uri.param("units", u)
+    }
   }
 
   private def toSupportedUnitsParameter(measurementSystem: MeasurementSystem): Option[String] = measurementSystem match {
     case IMPERIAL => Some("imperial")
     case METRIC   => Some("metric")
     case _        => None
+  }
+
+  private def withLang(language: Language)(uri: Uri): Uri = {
+    toSupportedLangParameter(language) match {
+      case None    => uri
+      case Some(l) => uri.param("lang", l)
+    }
   }
 
   private def toSupportedLangParameter(language: Language): Option[String] = language match {

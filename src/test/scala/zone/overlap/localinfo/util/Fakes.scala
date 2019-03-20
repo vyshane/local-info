@@ -10,6 +10,7 @@ import zone.overlap.localinfo.v1.local_info.MeasurementSystem.{IMPERIAL, METRIC}
 import zone.overlap.localinfo.v1.local_info._
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.localinfo.lib.weather.cache._
+import zone.overlap.protobuf.country_code.CountryCode
 
 /*
  * Fake entity generators
@@ -37,10 +38,10 @@ object Fakes {
       s"places/${format(address.countryCode())}.${format(address.state())}.${format(address.city())}"
     Place(
       resourceName,
+      CountryCode.fromName(address.countryCode().toUpperCase).get,
       address.city(),
       s"${address.city()}, ${address.state()}, ${address.country()}",
       address.country(),
-      address.countryCode()
     )
   }
 
