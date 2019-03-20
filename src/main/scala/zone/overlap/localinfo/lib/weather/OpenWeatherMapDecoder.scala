@@ -3,9 +3,8 @@
 package zone.overlap.localinfo.lib.weather
 
 import zone.overlap.localinfo.lib.utils.TaskUtils._
-import io.circe.{DecodingFailure, Json}
+import io.circe.Json
 import monix.eval.Task
-import zone.overlap.localinfo.lib.errors.Internal
 import zone.overlap.localinfo.v1.local_info.Weather
 
 case class ForecastTemperatures(minimum: Float, maximum: Float)
@@ -41,9 +40,5 @@ object OpenWeatherMapDecoder {
     } yield ForecastTemperatures(min, max)
 
     toTask(forecastTemperatures)
-  }
-
-  def toTask[B](value: Either[DecodingFailure, B]): Task[B] = {
-    fromEither[DecodingFailure, B](decodingFailure => Internal(decodingFailure.getMessage()).exception)(value)
   }
 }
