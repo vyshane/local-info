@@ -34,12 +34,15 @@ class OpenWeatherMapClient(httpGetJson: Uri => Task[Json])(apiKey: String) exten
   private def fetchCurrentConditions(coordinate: Coordinate,
                                      language: Language,
                                      measurementSystem: MeasurementSystem): Task[Weather] = {
-    val uri = uri"${apiBaseUrl}/weather"
+    val baseUri = uri"${apiBaseUrl}/weather"
       .param("apikey", apiKey)
-      .param("lat", String.valueOf(coordinate.latitude))
-      .param("lon", String.valueOf(coordinate.longitude))
 
-    val uriWithLocale = withLang(language) _ andThen withUnits(measurementSystem) _ apply uri
+    val uri = (
+      withCoordinate(coordinate) _
+        andThen withLang(language) _
+        andThen withUnits(measurementSystem) _
+        apply baseUri
+    )
 
     for {
       json <- httpGetJson(uri)
@@ -50,18 +53,27 @@ class OpenWeatherMapClient(httpGetJson: Uri => Task[Json])(apiKey: String) exten
   private def fetchTodaysForecastTemperatures(coordinate: Coordinate,
                                               language: Language,
                                               measurementSystem: MeasurementSystem): Task[ForecastTemperatures] = {
-    val uri = uri"${apiBaseUrl}/forecast/daily"
+    val baseUri = uri"${apiBaseUrl}/forecast/daily"
       .param("apikey", apiKey)
-      .param("lat", String.valueOf(coordinate.latitude))
-      .param("lon", String.valueOf(coordinate.longitude))
       .param("cnt", "1") // Number of days
 
-    val uriWithLocale = withLang(language) _ andThen withUnits(measurementSystem) _ apply uri
+    val uri = (
+      withCoordinate(coordinate) _
+        andThen withLang(language) _
+        andThen withUnits(measurementSystem) _
+        apply baseUri
+    )
 
     for {
-      json <- httpGetJson(uriWithLocale)
+      json <- httpGetJson(uri)
       t <- decodeTodaysForecastTemperatures(json)
     } yield t
+  }
+
+  private def withCoordinate(coordinate: Coordinate)(uri: Uri): Uri = {
+    uri
+      .param("lat", String.valueOf(coordinate.latitude))
+      .param("lon", String.valueOf(coordinate.longitude))
   }
 
   private def withUnits(measurementSystem: MeasurementSystem)(uri: Uri): Uri = {
