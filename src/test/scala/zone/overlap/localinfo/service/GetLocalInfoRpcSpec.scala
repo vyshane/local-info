@@ -5,15 +5,14 @@ import org.scalamock.scalatest.AsyncMockFactory
 import org.scalatest.{AsyncWordSpec, Matchers}
 import zone.overlap.localinfo.lib.weather.cache.{FoundationDbCache, NoCache}
 
+// TODO
 class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFactory {
 
   "GetLocalInfoRpc configured with no cache" when {
 //    val getLocalInfoRpc = new GetLocalInfoRpc(NoCache)
 
-    "" should {
-      "" in {
-        ???
-      }
+    "TODO" should {
+      "TODO" in (pending)
     }
   }
 
@@ -23,10 +22,8 @@ class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFact
 
 //    val getLocalInfoRpc = new GetLocalInfoRpc(fdbCache)
 
-    "" should {
-      "" in {
-        ???
-      }
+    "TODO" should {
+      "TODO" in (pending)
     }
   }
 }
