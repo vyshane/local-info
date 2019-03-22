@@ -58,8 +58,8 @@ object Fakes {
     Weather(
       faker.weather().description(),
       temperature,
-      temperature - faker.random().nextInt(1, 10),
-      temperature + faker.random().nextInt(1, 10),
+      Some(temperature - faker.random().nextInt(1, 10)),
+      Some(temperature + faker.random().nextInt(1, 10)),
       randomHumidity(),
       randomPressure(),
       randomWindSpeed(measurementSystem),

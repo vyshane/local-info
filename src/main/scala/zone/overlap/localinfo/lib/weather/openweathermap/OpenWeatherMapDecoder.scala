@@ -23,7 +23,7 @@ object OpenWeatherMapDecoder {
       windSpeed <- wind.get[Float]("speed")
       windDirection <- wind.get[Float]("deg")
       cloudCover <- cursor.downField("clouds").get[Float]("all")
-    } yield Weather(description.capitalize, temp, 0, 0, humidity, pressure, windSpeed, windDirection, cloudCover)
+    } yield Weather(description.capitalize, temp, None, None, humidity, pressure, windSpeed, windDirection, cloudCover)
 
     toTask(weather)
   }

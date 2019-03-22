@@ -21,14 +21,21 @@ class OpenWeatherMapClient(httpGetJson: Uri => Task[Json])(apiKey: String) exten
                                  measurementSystem: MeasurementSystem): Task[Weather] = {
 
     val currentConditions = fetchCurrentConditions(coordinate, language, measurementSystem)
-    // OpenWeatherMap provides the day's minimum and maximum temparatures through the daily forecast API
-    val forecastTemperatures = fetchTodaysForecastTemperatures(coordinate, language, measurementSystem)
 
-    // Parallel requests
+    // OpenWeatherMap provides the day's minimum and maximum temparatures through the daily forecast API
+    val forecastTemperatures: Task[Option[ForecastTemperatures]] =
+      fetchTodaysForecastTemperatures(coordinate, language, measurementSystem)
+        .map(Some(_))
+        // Not being able to fetch forecast temperatures should not be a fatal error
+        .onErrorFallbackTo(Task.now(None))
+
+    // Fetch in parallel
     Task.zipMap2(currentConditions, forecastTemperatures) { (weather, forecastTemperatures) =>
-      weather
-        .withMinimumTemperature(forecastTemperatures.minimum)
-        .withMaximumTemperature(forecastTemperatures.maximum)
+      forecastTemperatures.map { ft =>
+        weather
+          .withMinimumTemperature(ft.minimum)
+          .withMaximumTemperature(ft.maximum)
+      } getOrElse weather
     }
   }
 

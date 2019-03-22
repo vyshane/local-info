@@ -90,8 +90,8 @@ class OpenWeatherMapDecoderSpec extends AsyncWordSpec with Matchers {
           _ shouldEqual Weather(
             summary = "Light rain",
             temperature = 4.5f,
-            minimumTemperature = 0,
-            maximumTemperature = 0,
+            minimumTemperature = None,
+            maximumTemperature = None,
             humidity = 86,
             pressure = 994,
             windSpeed = 6.2f,

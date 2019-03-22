@@ -17,8 +17,8 @@ class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFact
   }
 
   "GetLocalInfoRpc configured with FoundationDB cache" when {
-    class MockableFoundationDbCache extends FoundationDbCache(null, null, null, null)
-    val fdbCache = mock[MockableFoundationDbCache]
+//    class MockableFoundationDbCache extends FoundationDbCache(null, null, null, null)
+//    val fdbCache = mock[MockableFoundationDbCache]
 
 //    val getLocalInfoRpc = new GetLocalInfoRpc(fdbCache)
 
