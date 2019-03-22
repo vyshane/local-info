@@ -25,23 +25,11 @@ class LocationIqNominatimClientSpec extends AsyncWordSpec with Matchers with Asy
 
   val singapore = parse(
     """{
-      |    "place_id": "208977371",
-      |    "licence": "https://locationiq.com/attribution",
-      |    "osm_type": "relation",
-      |    "osm_id": "536780",
-      |    "lat": "1.357107",
-      |    "lon": "103.8194992",
-      |    "display_name": "Singapore",
-      |    "address": {
-      |        "country": "Singapore",
-      |        "country_code": "sg"
-      |    },
-      |    "boundingbox": [
-      |        "1.1303611",
-      |        "1.5131602",
-      |        "103.5666667",
-      |        "104.5706795"
-      |    ]
+      |  "display_name": "Singapore",
+      |  "address": {
+      |    "country": "Singapore",
+      |    "country_code": "sg"
+      |  }
       |}
     """.stripMargin).right.get
 

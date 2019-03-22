@@ -28,29 +28,28 @@ class NominatimAddressDecoderSpec extends AsyncWordSpec with Matchers {
       "decode the place" in {
         val nyc = parse(
           """{
-            |    "place_id": "209927283",
-            |    "licence": "https://locationiq.com/attribution",
-            |    "osm_type": "relation",
-            |    "osm_id": "8398091",
-            |    "lat": "40.7598219",
-            |    "lon": "-73.9724708",
-            |    "display_name": "Midtown East, Manhattan, Manhattan Community Board 5, New York County, New York City, New York, USA",
-            |    "address": {
-            |        "suburb": "Midtown East",
-            |        "city_district": "Manhattan",
-            |        "city": "New York City",
-            |        "county": "New York County",
-            |        "state": "New York",
-            |        "country": "USA",
-            |        "country_code": "us",
-            |        "postcode": "10022"
-            |    },
-            |    "boundingbox": [
-            |        "40.7498295",
-            |        "40.7642791",
-            |        "-73.9808875",
-            |        "-73.9585367"
-            |    ]
+            |  "place_id": "209927283",
+            |  "osm_type": "relation",
+            |  "osm_id": "8398091",
+            |  "lat": "40.7598219",
+            |  "lon": "-73.9724708",
+            |  "display_name": "Midtown East, Manhattan, Manhattan Community Board 5, New York County, New York City, New York, USA",
+            |  "address": {
+            |    "suburb": "Midtown East",
+            |    "city_district": "Manhattan",
+            |    "city": "New York City",
+            |    "county": "New York County",
+            |    "state": "New York",
+            |    "country": "USA",
+            |    "country_code": "us",
+            |    "postcode": "10022"
+            |  },
+            |  "boundingbox": [
+            |    "40.7498295",
+            |    "40.7642791",
+            |    "-73.9808875",
+            |    "-73.9585367"
+            |  ]
             |}
           """.stripMargin
         ).right.get
@@ -75,24 +74,24 @@ class NominatimAddressDecoderSpec extends AsyncWordSpec with Matchers {
     }
     "when asked to decode an place with only country as the only address field" should {
       "successfully decode the place" in {
-        val singapore = parse("""{
-            |    "place_id": "208977371",
-            |    "licence": "https://locationiq.com/attribution",
-            |    "osm_type": "relation",
-            |    "osm_id": "536780",
-            |    "lat": "1.357107",
-            |    "lon": "103.8194992",
-            |    "display_name": "Singapore",
-            |    "address": {
-            |        "country": "Singapore",
-            |        "country_code": "sg"
-            |    },
-            |    "boundingbox": [
-            |        "1.1303611",
-            |        "1.5131602",
-            |        "103.5666667",
-            |        "104.5706795"
-            |    ]
+        val singapore = parse(
+          """{
+            |  "place_id": "208977371",
+            |  "osm_type": "relation",
+            |  "osm_id": "536780",
+            |  "lat": "1.357107",
+            |  "lon": "103.8194992",
+            |  "display_name": "Singapore",
+            |  "address": {
+            |    "country": "Singapore",
+            |    "country_code": "sg"
+            |  },
+            |  "boundingbox": [
+            |    "1.1303611",
+            |    "1.5131602",
+            |    "103.5666667",
+            |    "104.5706795"
+            |  ]
             |}
           """.stripMargin).right.get
 
