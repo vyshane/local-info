@@ -4,6 +4,7 @@ package zone.overlap.localinfo.lib.weather.cache
 
 import java.time.{Clock, Instant}
 import com.google.protobuf.timestamp.Timestamp
+import com.typesafe.scalalogging.LazyLogging
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
@@ -25,7 +26,8 @@ case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
                              clock: Clock,
                              ttl: Duration)
     extends WeatherCache
-    with Scheduling {
+    with Scheduling
+    with LazyLogging {
 
   purgeSignal.executeOn(io).foreach(_ => purgeExpiredItems())
 
@@ -51,6 +53,7 @@ case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
   }
 
   private def purgeExpiredItems(): Task[Unit] = {
+    logger.debug("Purging expired items from weather cache")
     cachedWeatherRepository.deleteOlderThan(Instant.now(clock).minusSeconds(ttl.toSeconds))
   }
 

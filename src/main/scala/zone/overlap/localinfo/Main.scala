@@ -3,6 +3,7 @@
 package zone.overlap.localinfo
 
 import java.time.Clock
+import java.util.concurrent.ThreadLocalRandom
 import com.apple.foundationdb.record.provider.foundationdb.{FDBDatabase, FDBDatabaseFactory}
 import com.typesafe.scalalogging.LazyLogging
 import monix.reactive.Observable
@@ -54,7 +55,11 @@ object Main extends App with LazyLogging {
 
   private val foundationDbCacheProvider: (CachedWeatherRepository, Config, Clock) => FoundationDbCache = {
     (repository, config, clock) =>
-      val purgeSignal = Observable.interval(1 minute).map(_ => ())
+      // It is common to deploy multiple instances of the application at the same time.
+      // Add some jitter so that the applications don't all purge the cache around the same time.
+      val initialDelay = ThreadLocalRandom.current().nextInt(10, 51) seconds
+
+      val purgeSignal = Observable.intervalWithFixedDelay(initialDelay, 1 minute).map(_ => ())
       FoundationDbCache(repository, purgeSignal, clock, config.weatherCacheTtl seconds)
   }
 
