@@ -7,8 +7,6 @@ import io.grpc.{Status, StatusRuntimeException}
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.{AsyncWordSpec, Matchers}
 import zone.overlap.localinfo.lib.weather.OpenWeatherMapDecoder._
-import zone.overlap.localinfo.v1.local_info.Language.EN
-import zone.overlap.localinfo.v1.local_info.MeasurementSystem.METRIC
 import zone.overlap.localinfo.v1.local_info.Weather
 
 class OpenWeatherMapDecoderSpec extends AsyncWordSpec with Matchers {
