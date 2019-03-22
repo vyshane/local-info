@@ -4,6 +4,7 @@ package zone.overlap.localinfo.lib.geolocation
 
 import io.circe.{DecodingFailure, Json}
 import monix.eval.Task
+import zone.overlap.localinfo.lib.errors.Internal
 import zone.overlap.localinfo.lib.utils.Base62
 import zone.overlap.localinfo.v1.local_info.Place
 import zone.overlap.localinfo.lib.utils.TaskUtils._
@@ -22,6 +23,9 @@ object NominatimAddressDecoder {
       .toSeq
       // Reorder so that largest administrative area comes first
       .reverse
+
+    if (addressKeys.size == 0)
+      return Task.raiseError(Internal("Unable to decode address for Place").exception)
 
     val addressParts: Seq[Task[String]] = addressKeys
       .map(k => addressCursor.get[String](k))
