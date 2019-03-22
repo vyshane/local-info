@@ -9,7 +9,7 @@ import org.scalatest.{AsyncWordSpec, Matchers}
 import zone.overlap.localinfo.lib.geolocation.NominatimAddressDecoder._
 import zone.overlap.localinfo.lib.utils.Base62._
 import zone.overlap.localinfo.v1.local_info.Place
-import zone.overlap.protobuf.country_code.CountryCode.US
+import zone.overlap.protobuf.country_code.CountryCode.{SG, US}
 
 class NominatimAddressDecoderSpec extends AsyncWordSpec with Matchers {
 
@@ -69,6 +69,40 @@ class NominatimAddressDecoderSpec extends AsyncWordSpec with Matchers {
             displayName = "Midtown East",
             address = "Midtown East, Manhattan, Manhattan Community Board 5, New York County, New York City, New York, USA",
             country = "USA"
+          )
+        }
+      }
+    }
+    "when asked to decode an place with only country as the only address field" should {
+      "successfully decode the place" in {
+        val singapore = parse("""{
+            |    "place_id": "208977371",
+            |    "licence": "https://locationiq.com/attribution",
+            |    "osm_type": "relation",
+            |    "osm_id": "536780",
+            |    "lat": "1.357107",
+            |    "lon": "103.8194992",
+            |    "display_name": "Singapore",
+            |    "address": {
+            |        "country": "Singapore",
+            |        "country_code": "sg"
+            |    },
+            |    "boundingbox": [
+            |        "1.1303611",
+            |        "1.5131602",
+            |        "103.5666667",
+            |        "104.5706795"
+            |    ]
+            |}
+          """.stripMargin).right.get
+
+        decodePlace(singapore).runAsync map {
+          _ shouldEqual Place(
+            name = "SG." + encode("Singapore"),
+            countryCode = SG,
+            displayName = "Singapore",
+            address = "Singapore",
+            country = "Singapore"
           )
         }
       }
