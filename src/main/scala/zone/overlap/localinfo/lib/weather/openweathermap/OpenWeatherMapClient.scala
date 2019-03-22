@@ -1,11 +1,12 @@
 // Copyright 2019 Vy-Shane Xie
 
-package zone.overlap.localinfo.lib.weather
+package zone.overlap.localinfo.lib.weather.openweathermap
 
 import com.softwaremill.sttp._
 import io.circe.Json
 import monix.eval.Task
-import zone.overlap.localinfo.lib.weather.OpenWeatherMapDecoder._
+import zone.overlap.localinfo.lib.weather.WeatherClient
+import zone.overlap.localinfo.lib.weather.openweathermap.OpenWeatherMapDecoder._
 import zone.overlap.localinfo.v1.local_info.Language._
 import zone.overlap.localinfo.v1.local_info.MeasurementSystem.{IMPERIAL, METRIC}
 import zone.overlap.localinfo.v1.local_info.{Language, MeasurementSystem, Weather}

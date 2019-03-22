@@ -1,6 +1,6 @@
 // Copyright 2019 Vy-Shane Xie
 
-package zone.overlap.localinfo.lib.weather
+package zone.overlap.localinfo.lib.weather.openweathermap
 
 import zone.overlap.localinfo.lib.utils.TaskUtils._
 import io.circe.Json

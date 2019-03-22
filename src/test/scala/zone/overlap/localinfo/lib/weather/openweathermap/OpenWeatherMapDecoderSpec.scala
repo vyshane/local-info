@@ -1,12 +1,12 @@
 // Copyright 2019 Vy-Shane Xie
 
-package zone.overlap.localinfo.lib.weather
+package zone.overlap.localinfo.lib.weather.openweathermap
 
 import io.circe.parser._
 import io.grpc.{Status, StatusRuntimeException}
 import monix.execution.Scheduler.Implicits.global
 import org.scalatest.{AsyncWordSpec, Matchers}
-import zone.overlap.localinfo.lib.weather.OpenWeatherMapDecoder._
+import zone.overlap.localinfo.lib.weather.openweathermap.OpenWeatherMapDecoder._
 import zone.overlap.localinfo.v1.local_info.Weather
 
 class OpenWeatherMapDecoderSpec extends AsyncWordSpec with Matchers {

@@ -12,7 +12,8 @@ import pureconfig.generic.auto._
 import wvlet.airframe._
 import zone.overlap.localinfo.lib.geolocation.{GeolocationClient, LocationIqNominatimClient}
 import zone.overlap.localinfo.lib.http.HttpClient._
-import zone.overlap.localinfo.lib.weather.{OpenWeatherMapClient, WeatherClient}
+import zone.overlap.localinfo.lib.weather.WeatherClient
+import zone.overlap.localinfo.lib.weather.openweathermap.OpenWeatherMapClient
 import zone.overlap.localinfo.lib.weather.cache.{CachedWeatherRepository, FoundationDbCache, NoCache}
 import zone.overlap.localinfo.service.GetLocalInfoRpc
 import scala.concurrent.duration._
