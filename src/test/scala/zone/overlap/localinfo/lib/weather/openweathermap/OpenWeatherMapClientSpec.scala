@@ -12,5 +12,9 @@ class OpenWeatherMapClientSpec extends AsyncWordSpec with Matchers with AsyncMoc
       // TODO
       "fetch the current conditions as well as today's forecast temperatures" in (pending)
     }
+    "fetch of forecast temperatures fails" should {
+      // TODO
+      "return current weather but without forecast temperatures" in (pending)
+    }
   }
 }
