@@ -16,7 +16,7 @@ import zone.overlap.localinfo.lib.http.HttpClient._
 import zone.overlap.localinfo.lib.weather.WeatherClient
 import zone.overlap.localinfo.lib.weather.openweathermap.OpenWeatherMapClient
 import zone.overlap.localinfo.lib.weather.cache.{CachedWeatherRepository, FoundationDbCache, NoCache}
-import zone.overlap.localinfo.service.GetLocalInfoRpc
+import zone.overlap.localinfo.service.getlocalinfo.GetLocalInfoRpc
 import scala.concurrent.duration._
 
 object Main extends App with LazyLogging {

@@ -1,16 +1,17 @@
 // Copyright 2019 Vy-Shane Xie
 
-package zone.overlap.localinfo.service
+package zone.overlap.localinfo.service.getlocalinfo
 
 import java.time.{Clock, LocalDate}
 import monix.eval.Task
 import net.iakovlev.timeshape.TimeZoneEngine
 import zone.overlap.localinfo.lib.geolocation.GeolocationClient
 import zone.overlap.localinfo.lib.time.SunCalculator
-import zone.overlap.localinfo.lib.weather.cache._
+import zone.overlap.localinfo.lib.validation._
 import zone.overlap.localinfo.lib.weather.WeatherClient
-import zone.overlap.localinfo.lib.weather.cache.{NoCache, WeatherCache}
+import zone.overlap.localinfo.lib.weather.cache.{NoCache, WeatherCache, _}
 import zone.overlap.localinfo.persistence.cached_weather.CachedWeather
+import zone.overlap.localinfo.service.getlocalinfo.GetLocalInfoValidator._
 import zone.overlap.localinfo.v1.local_info._
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.protobuf.zoom_level.ZoomLevel
@@ -23,13 +24,12 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
                       clock: Clock) {
 
   def handle(request: GetLocalInfoRequest): Task[LocalInfo] = {
-    // TODO: Validate request
-    val coordinate = request.coordinate.get
-    val zoomLevel = ZoomLevel.ZOOM_LEVEL_UNSPECIFIED // TODO: Enforce range 5 - 14
-
     for {
-      place <- geolocationClient.getPlace(coordinate, request.zoomLevel, request.language)
-      weather <- getWeather(coordinate, place, request.language, request.measurementSystem)
+      req <- toTask(validate(request))
+      coordinate = req.coordinate.get
+      zoomLevel = enforceZoomLevelRange(req.zoomLevel)
+      place <- geolocationClient.getPlace(coordinate, zoomLevel, req.language)
+      weather <- getWeather(coordinate, place, req.language, req.measurementSystem)
       sun = SunCalculator.calculateSun(LocalDate.now(clock), coordinate)
       timezone = timeZoneEngine.query(coordinate.latitude, coordinate.longitude).asScala.map(_.getId).getOrElse("")
     } yield LocalInfo(Some(coordinate), zoomLevel, Some(place), timezone, sun.rise, sun.set)
@@ -49,5 +49,11 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
         case None    => weatherClient.getCurrentWeather(coordinate, language, measurementSystem)
       }
     }
+  }
+
+  private def enforceZoomLevelRange(zoomLevel: ZoomLevel): ZoomLevel = {
+    if (zoomLevel.value < ZoomLevel.LEVEL_5.value) ZoomLevel.LEVEL_5
+    else if (zoomLevel.value > ZoomLevel.LEVEL_14.value) ZoomLevel.LEVEL_14
+    else zoomLevel
   }
 }

@@ -1,6 +1,7 @@
 // Copyright 2019 Vy-Shane Xie
 
 package zone.overlap.localinfo.lib.utils
+
 import io.circe.DecodingFailure
 import monix.eval.Task
 import zone.overlap.localinfo.lib.errors.Internal

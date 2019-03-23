@@ -3,6 +3,7 @@
 package zone.overlap.localinfo.service
 
 import monix.eval.Task
+import zone.overlap.localinfo.service.getlocalinfo.GetLocalInfoRpc
 import zone.overlap.localinfo.v1.local_info.{GetLocalInfoRequest, LocalInfo}
 import zone.overlap.localinfo.v1.local_info.LocalInfoGrpcMonix
 
