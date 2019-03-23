@@ -13,17 +13,17 @@ object GetLocalInfoValidator {
 
   def validate(request: GetLocalInfoRequest): ValidationResult[GetLocalInfoRequest] = {
     (validateCoordinate(request.coordinate), validateZoomLevel(request.zoomLevel)) mapN { (c, z) =>
-      GetLocalInfoRequest(c, z, request.language, request.measurementSystem)
+      request.withCoordinate(c).withZoomLevel(z)
     }
   }
 
-  private def validateCoordinate(coordinate: Option[Coordinate]): ValidationResult[Option[Coordinate]] = {
+  private def validateCoordinate(coordinate: Option[Coordinate]): ValidationResult[Coordinate] = {
     coordinate match {
       case None => CoordinateIsRequired.invalidNec
       case Some(c) =>
         if (c.longitude < -180 || c.longitude > 180) LongitudeOutOfRange.invalidNec
         else if (c.latitude < 0 || c.latitude > 90) LatitudeOutOfRange.invalidNec
-        else coordinate.validNec
+        else c.validNec
     }
   }
 
