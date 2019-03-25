@@ -26,7 +26,7 @@ class FoundationDbCacheSpec
   val now = Instant.now()
   val clock = Clock.fixed(now, ZoneId.systemDefault())
   val ttl = 30 seconds
-  val foundationDbCache = FoundationDbCache(cachedWeatherRepository, purgeSignal, clock, ttl)
+  val foundationDbCache = new FoundationDbCache(cachedWeatherRepository, purgeSignal, clock, ttl)
   val localityKey = randomLocalityKey()
 
   "FoundationDbCache" when {

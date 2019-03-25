@@ -39,14 +39,17 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
                          place: Place,
                          language: Language,
                          measurementSystem: MeasurementSystem): Task[Weather] = {
-    val cachedWeather: Task[Option[CachedWeather]] = generateLocalityKey(place, language, measurementSystem)
-      .map(weatherCache.get)
-      .getOrElse(Task.now(None))
+    val localityKey = generateLocalityKey(place, language, measurementSystem)
+    val cachedWeather: Task[Option[CachedWeather]] = localityKey.map(weatherCache.get).getOrElse(Task.now(None))
 
     cachedWeather.flatMap { cw =>
       cw match {
-        case Some(c) => Task.now(c.weather.get)
-        case None    => weatherClient.getCurrentWeather(coordinate, language, measurementSystem)
+        case Some(cw) =>
+          Task.now(cw.weather.get)
+        case None =>
+          weatherClient
+            .getCurrentWeather(coordinate, language, measurementSystem)
+            .flatMap(saveToCache(localityKey))
       }
     }
   }
@@ -55,5 +58,12 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
     if (zoomLevel.value < ZoomLevel.LEVEL_5.value) ZoomLevel.LEVEL_5
     else if (zoomLevel.value > ZoomLevel.LEVEL_14.value) ZoomLevel.LEVEL_14
     else zoomLevel
+  }
+
+  private def saveToCache(localityKey: Option[String])(weather: Weather): Task[Weather] = {
+    localityKey match {
+      case Some(k) => weatherCache.put(k, weather).map(_ => weather)
+      case None    => Task.now(weather)
+    }
   }
 }

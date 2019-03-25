@@ -60,7 +60,7 @@ object Main extends App with LazyLogging {
       val initialDelay = ThreadLocalRandom.current().nextInt(10, 51) seconds
 
       val purgeSignal = Observable.intervalWithFixedDelay(initialDelay, 1 minute).map(_ => ())
-      FoundationDbCache(repository, purgeSignal, clock, config.weatherCacheTtl seconds)
+      new FoundationDbCache(repository, purgeSignal, clock, config.weatherCacheTtl seconds)
   }
 
   private val unCachedGetLocalInfoRpcProvider

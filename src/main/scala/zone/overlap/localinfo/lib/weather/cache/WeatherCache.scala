@@ -15,16 +15,18 @@ import scala.concurrent.duration.Duration
 
 sealed trait WeatherCache {
   def get(localityKey: String): Task[Option[CachedWeather]]
+  def put(localityKey: String, weather: Weather): Task[Unit]
 }
 
-case object NoCache extends WeatherCache {
+object NoCache extends WeatherCache {
   override def get(localityKey: String): Task[Option[CachedWeather]] = Task.now(None)
+  override def put(localityKey: String, weather: Weather): Task[Unit] = Task.now(())
 }
 
-case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
-                             purgeSignal: Observable[Unit],
-                             clock: Clock,
-                             ttl: Duration)
+class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
+                        purgeSignal: Observable[Unit],
+                        clock: Clock,
+                        ttl: Duration)
     extends WeatherCache
     with Scheduling
     with LazyLogging {
@@ -42,7 +44,7 @@ case class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
       }
   }
 
-  def put(localityKey: String, weather: Weather): Task[Unit] = {
+  override def put(localityKey: String, weather: Weather): Task[Unit] = {
     cachedWeatherRepository.save(
       CachedWeather(
         localityKey,
