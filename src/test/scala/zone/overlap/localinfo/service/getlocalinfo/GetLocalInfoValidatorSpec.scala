@@ -7,7 +7,6 @@ import cats.data.Validated.Invalid
 import cats.implicits._
 import org.scalatest.{Matchers, WordSpec}
 import zone.overlap.localinfo.service.getlocalinfo.GetLocalInfoValidator._
-import zone.overlap.localinfo.lib.validation._
 import zone.overlap.localinfo.v1.local_info.GetLocalInfoRequest
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.protobuf.zoom_level.ZoomLevel
