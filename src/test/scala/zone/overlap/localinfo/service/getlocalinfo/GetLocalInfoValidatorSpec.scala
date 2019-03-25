@@ -14,21 +14,21 @@ import zone.overlap.protobuf.zoom_level.ZoomLevel
 class GetLocalInfoValidatorSpec extends WordSpec with Matchers {
 
   "GetLocalInfoValidator" when {
-    "validating an GetLocalInfoRequest with empty coordinate and zoom level" should {
-      "return the validation errors" in {
+    "validating an GetLocalInfoRequest with empty coordinate and empty zoom level" should {
+      "return all the validation errors" in {
         validate(GetLocalInfoRequest()).toString shouldEqual
           Invalid(Chain(CoordinateIsRequired, ZoomLevelIsRequired)).toString
       }
     }
-    "validating an GetLocalInfoRequest with invalid coordinate" should {
-      "return the validation errors" in {
+    "validating an GetLocalInfoRequest with invalid coordinate and empty zoom level" should {
+      "return all the validation errors" in {
         val coordinateLessThanMin = Some(Coordinate(-91, -181))
-        validate(GetLocalInfoRequest(coordinateLessThanMin, ZoomLevel.LEVEL_12)).toString shouldEqual
-          Invalid(Chain(LatitudeOutOfRange, LongitudeOutOfRange)).toString
+        validate(GetLocalInfoRequest(coordinateLessThanMin)).toString shouldEqual
+          Invalid(Chain(LatitudeOutOfRange, LongitudeOutOfRange, ZoomLevelIsRequired)).toString
 
         val coordinateGreaterThanMax = Some(Coordinate(91, 181))
-        validate(GetLocalInfoRequest(coordinateGreaterThanMax, ZoomLevel.LEVEL_12)).toString shouldEqual
-          Invalid(Chain(LatitudeOutOfRange, LongitudeOutOfRange)).toString
+        validate(GetLocalInfoRequest(coordinateGreaterThanMax)).toString shouldEqual
+          Invalid(Chain(LatitudeOutOfRange, LongitudeOutOfRange, ZoomLevelIsRequired)).toString
       }
     }
     "validating a valid GetLocalInfoRequest" should {
