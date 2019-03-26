@@ -66,12 +66,12 @@ object Main extends App with LazyLogging {
   private val unCachedGetLocalInfoRpcProvider
     : (GeolocationClient, WeatherClient, TimeZoneEngine, Clock) => GetLocalInfoRpc = {
     (geolocationClient, weatherClient, timeZoneEngine, clock) =>
-      new GetLocalInfoRpc(geolocationClient, weatherClient, NoCache, timeZoneEngine, clock)
+      new GetLocalInfoRpc(geolocationClient, weatherClient, NoCache, timeZoneEngine.query, clock)
   }
 
   private val cachedGetLocalInfoRpcProvider
     : (GeolocationClient, WeatherClient, FoundationDbCache, TimeZoneEngine, Clock) => GetLocalInfoRpc = {
     (geolocationClient, weatherClient, foundationDbCache, timeZoneEngine, clock) =>
-      new GetLocalInfoRpc(geolocationClient, weatherClient, foundationDbCache, timeZoneEngine, clock)
+      new GetLocalInfoRpc(geolocationClient, weatherClient, foundationDbCache, timeZoneEngine.query, clock)
   }
 }

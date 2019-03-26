@@ -16,8 +16,8 @@ package object validation {
       case Valid(value) => Task(value)
       case Invalid(nec) => {
         val errorDescription = nec.foldLeft("") { (acc, v) =>
-          acc + "; " + v.errorMessage
-        }
+          acc + v.errorMessage + "; "
+        } dropRight 2
         Task.raiseError(InvalidArgument(errorDescription).exception)
       }
     }

@@ -2,9 +2,9 @@
 
 package zone.overlap.localinfo.service.getlocalinfo
 
-import java.time.{Clock, LocalDate}
+import java.time.{Clock, LocalDate, ZoneId}
+import java.util.Optional
 import monix.eval.Task
-import net.iakovlev.timeshape.TimeZoneEngine
 import zone.overlap.localinfo.lib.geolocation.GeolocationClient
 import zone.overlap.localinfo.lib.time.SunCalculator
 import zone.overlap.localinfo.lib.validation._
@@ -20,7 +20,7 @@ import scala.compat.java8.OptionConverters._
 class GetLocalInfoRpc(geolocationClient: GeolocationClient,
                       weatherClient: WeatherClient,
                       weatherCache: WeatherCache = NoCache,
-                      timeZoneEngine: TimeZoneEngine,
+                      timeZoneQuery: (Double, Double) => Optional[ZoneId],
                       clock: Clock) {
 
   def handle(request: GetLocalInfoRequest): Task[LocalInfo] = {
@@ -31,7 +31,7 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
       place <- geolocationClient.getPlace(coordinate, zoomLevel, req.language)
       weather <- getWeather(coordinate, place, req.language, req.measurementSystem)
       sun = SunCalculator.calculateSun(LocalDate.now(clock), coordinate)
-      timezone = timeZoneEngine.query(coordinate.latitude, coordinate.longitude).asScala.map(_.getId).getOrElse("")
+      timezone = timeZoneQuery(coordinate.latitude, coordinate.longitude).asScala.map(_.getId).getOrElse("")
     } yield LocalInfo(Some(coordinate), zoomLevel, Some(place), timezone, sun.rise, sun.set)
   }
 
