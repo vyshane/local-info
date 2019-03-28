@@ -17,7 +17,6 @@ import zone.overlap.localinfo.util.Fakes._
 import zone.overlap.localinfo.v1.local_info.Language.EN
 import zone.overlap.localinfo.v1.local_info.MeasurementSystem.METRIC
 import zone.overlap.localinfo.v1.local_info.{GetLocalInfoRequest, LocalInfo}
-import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.protobuf.zoom_level.ZoomLevel
 
 class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFactory {
@@ -45,26 +44,28 @@ class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFact
     }
     "called with zoom level smaller than the minimum zoom level that we can handle" should {
       "fallback to a zoom level that is within the valid range" in {
+        val language = randomLanguage()
         (weatherClient.getCurrentWeather _).expects(*, *, *).returning(Task.now(randomWeather()))
         timeZoneQuery.expects(*, *).returning(Optional.of(ZoneId.of("UTC")))
 
         // Verify fallback to minimum that we handle
-        (geolocationClient.getPlace _).expects(*, ZoomLevel.LEVEL_5, EN).returning(Task.now(randomPlace()))
+        (geolocationClient.getPlace _).expects(*, ZoomLevel.LEVEL_5, language).returning(Task.now(randomPlace()))
 
-        rpc.handle(GetLocalInfoRequest(Some(Coordinate(1, 10)), ZoomLevel.LEVEL_4, EN)).runAsync map {
+        rpc.handle(GetLocalInfoRequest(Some(randomCoordinate()), ZoomLevel.LEVEL_4, language)).runAsync map {
           _ shouldBe a[LocalInfo]
         }
       }
     }
     "called with zoom level greater than the maximum zoom level that we can handle" should {
       "fallback to a zoom level that is within the valid range" in {
+        val language = randomLanguage()
         (weatherClient.getCurrentWeather _).expects(*, *, *).returning(Task.now(randomWeather()))
         timeZoneQuery.expects(*, *).returning(Optional.of(ZoneId.of("UTC")))
 
         // Verify fallback to maximum that we handle
-        (geolocationClient.getPlace _).expects(*, ZoomLevel.LEVEL_14, EN).returning(Task.now(randomPlace()))
+        (geolocationClient.getPlace _).expects(*, ZoomLevel.LEVEL_14, language).returning(Task.now(randomPlace()))
 
-        rpc.handle(GetLocalInfoRequest(Some(Coordinate(1, 10)), ZoomLevel.LEVEL_15, EN)).runAsync map (
+        rpc.handle(GetLocalInfoRequest(Some(randomCoordinate()), ZoomLevel.LEVEL_15, language)).runAsync map (
           _ shouldBe a[LocalInfo]
         )
       }
@@ -75,24 +76,27 @@ class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFact
         (weatherCache.get _).expects(*).returning(Task.now(Some(randomCachedWeather())))
         timeZoneQuery.expects(*, *).returning(Optional.of(ZoneId.of("UTC")))
 
-        rpc.handle(GetLocalInfoRequest(Some(Coordinate(1, 10)), ZoomLevel.LEVEL_15, EN, METRIC)).runAsync map {
+        rpc
+          .handle(GetLocalInfoRequest(Some(randomCoordinate()), randomZoomLevel(), randomLanguage(), METRIC))
+          .runAsync map {
           _ shouldBe a[LocalInfo]
         }
       }
     }
     "asked for a weather information that is not in the cache" should {
       "use the weather client to fetch the weather and then cache it" in {
-        val coordinate = Coordinate(1, 10)
+        val coordinate = randomCoordinate()
+        val language = randomLanguage()
         val place = randomPlace()
-        val localityKey = s"/${place.name}/EN/METRIC"
+        val localityKey = s"/${place.name}/${language.name}/METRIC"
         val weather = randomWeather(METRIC)
         (geolocationClient.getPlace _).expects(*, *, *).returning(Task.now(place))
         (weatherCache.get _).expects(localityKey).returning(Task.now(None))
-        (weatherClient.getCurrentWeather _).expects(coordinate, EN, METRIC).returning(Task.now(weather))
+        (weatherClient.getCurrentWeather _).expects(coordinate, language, METRIC).returning(Task.now(weather))
         (weatherCache.put _).expects(localityKey, weather).returning(Task.now(()))
         timeZoneQuery.expects(*, *).returning(Optional.of(ZoneId.of("UTC")))
 
-        rpc.handle(GetLocalInfoRequest(Some(coordinate), ZoomLevel.LEVEL_15, EN, METRIC)).runAsync map {
+        rpc.handle(GetLocalInfoRequest(Some(coordinate), randomZoomLevel(), language, METRIC)).runAsync map {
           _ shouldBe a[LocalInfo]
         }
       }

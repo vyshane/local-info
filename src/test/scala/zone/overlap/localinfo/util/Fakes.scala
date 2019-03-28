@@ -11,6 +11,7 @@ import zone.overlap.localinfo.v1.local_info._
 import zone.overlap.protobuf.coordinate.Coordinate
 import zone.overlap.localinfo.lib.weather.cache._
 import zone.overlap.protobuf.country_code.CountryCode
+import zone.overlap.protobuf.zoom_level.ZoomLevel
 
 /*
  * Fake entity generators
@@ -51,6 +52,10 @@ object Fakes {
 
   def randomMeasurementSystem(): MeasurementSystem = {
     MeasurementSystem.fromValue(faker.random().nextInt(1, 2))
+  }
+
+  def randomZoomLevel(): ZoomLevel = {
+    ZoomLevel.fromValue(faker.random().nextInt(1, 20))
   }
 
   def randomWeather(measurementSystem: MeasurementSystem): Weather = {
