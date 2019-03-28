@@ -14,7 +14,6 @@ import zone.overlap.localinfo.lib.geolocation.GeolocationClient
 import zone.overlap.localinfo.lib.weather.WeatherClient
 import zone.overlap.localinfo.lib.weather.cache.FoundationDbCache
 import zone.overlap.localinfo.util.Fakes._
-import zone.overlap.localinfo.v1.local_info.Language.EN
 import zone.overlap.localinfo.v1.local_info.MeasurementSystem.METRIC
 import zone.overlap.localinfo.v1.local_info.{GetLocalInfoRequest, LocalInfo}
 import zone.overlap.protobuf.zoom_level.ZoomLevel
