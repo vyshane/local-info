@@ -4,6 +4,7 @@ package zone.overlap.localinfo.service.getlocalinfo
 
 import java.time.{Clock, ZoneId}
 import java.util.Optional
+import com.google.protobuf.timestamp.Timestamp
 import io.grpc.{Status, StatusRuntimeException}
 import monix.eval.Task
 import monix.execution.Scheduler.Implicits.global
@@ -76,7 +77,9 @@ class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFact
         timeZoneQuery.expects(*, *).returning(Optional.of(ZoneId.of("UTC")))
 
         rpc
-          .handle(GetLocalInfoRequest(Some(randomCoordinate()), randomZoomLevel(), randomLanguage(), METRIC))
+          .handle(
+            GetLocalInfoRequest(Some(randomCoordinate()), randomZoomLevel(), randomLanguage(), randomMeasurementSystem())
+          )
           .runAsync map {
           _ shouldBe a[LocalInfo]
         }
@@ -86,22 +89,44 @@ class GetLocalInfoRpcSpec extends AsyncWordSpec with Matchers with AsyncMockFact
       "use the weather client to fetch the weather and then cache it" in {
         val coordinate = randomCoordinate()
         val language = randomLanguage()
+        val measurementSystem = randomMeasurementSystem()
         val place = randomPlace()
-        val localityKey = s"/${place.name}/${language.name}/METRIC"
-        val weather = randomWeather(METRIC)
+        val localityKey = s"/${place.name}/${language.name}/${measurementSystem.name}"
+        val weather = randomWeather(measurementSystem)
+
         (geolocationClient.getPlace _).expects(*, *, *).returning(Task.now(place))
         (weatherCache.get _).expects(localityKey).returning(Task.now(None))
-        (weatherClient.getCurrentWeather _).expects(coordinate, language, METRIC).returning(Task.now(weather))
+        (weatherClient.getCurrentWeather _).expects(coordinate, language, measurementSystem).returning(Task.now(weather))
         (weatherCache.put _).expects(localityKey, weather).returning(Task.now(()))
         timeZoneQuery.expects(*, *).returning(Optional.of(ZoneId.of("UTC")))
 
-        rpc.handle(GetLocalInfoRequest(Some(coordinate), randomZoomLevel(), language, METRIC)).runAsync map {
+        rpc.handle(GetLocalInfoRequest(Some(coordinate), randomZoomLevel(), language, measurementSystem)).runAsync map {
           _ shouldBe a[LocalInfo]
         }
       }
     }
     "asked to get local info" should {
-      "run through the flow as expected" in (pending)
+      "run through the flow as expected" in {
+        val coordinate = randomCoordinate()
+        val language = randomLanguage()
+        val measurementSystem = randomMeasurementSystem()
+        val place = randomPlace()
+        val localityKey = s"/${place.name}/${language.name}/${measurementSystem.name}"
+        val weather = randomWeather(measurementSystem)
+
+        (geolocationClient.getPlace _).expects(coordinate, ZoomLevel.LEVEL_5, language).returning(Task.now(place))
+        (weatherCache.get _).expects(localityKey).returning(Task.now(None))
+        (weatherClient.getCurrentWeather _).expects(coordinate, language, measurementSystem).returning(Task.now(weather))
+        (weatherCache.put _).expects(localityKey, weather).returning(Task.now(()))
+        timeZoneQuery.expects(coordinate.latitude, coordinate.longitude).returning(Optional.of(ZoneId.of("UTC")))
+
+        rpc.handle(GetLocalInfoRequest(Some(coordinate), ZoomLevel.LEVEL_1, language, measurementSystem)).runAsync map { l =>
+          l.coordinate shouldEqual Some(coordinate)
+          l.zoomLevel shouldEqual ZoomLevel.LEVEL_5 // Set to minimum supported
+          l.timeZone shouldEqual "UTC"
+          l.currentWeather shouldEqual Some(weather)
+        }
+      }
     }
   }
 }

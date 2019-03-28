@@ -32,7 +32,7 @@ class GetLocalInfoRpc(geolocationClient: GeolocationClient,
       weather <- getWeather(coordinate, place, req.language, req.measurementSystem)
       sun = SunCalculator.calculateSun(LocalDate.now(clock), coordinate)
       timezone = timeZoneQuery(coordinate.latitude, coordinate.longitude).asScala.map(_.getId).getOrElse("")
-    } yield LocalInfo(Some(coordinate), zoomLevel, Some(place), timezone, sun.rise, sun.set)
+    } yield LocalInfo(Some(coordinate), zoomLevel, Some(place), timezone, sun.rise, sun.set, Some(weather))
   }
 
   private def getWeather(coordinate: Coordinate,
