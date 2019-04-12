@@ -61,7 +61,6 @@ class FoundationDbCache(cachedWeatherRepository: CachedWeatherRepository,
 
   private def wasRetrievedAfter(cachedWeather: CachedWeather)(instant: Instant): Boolean = {
     cachedWeather.cachedAt
-      .map(t => t.seconds > instant.getEpochSecond)
-      .getOrElse(false)
+      .exists(_.seconds > instant.getEpochSecond)
   }
 }

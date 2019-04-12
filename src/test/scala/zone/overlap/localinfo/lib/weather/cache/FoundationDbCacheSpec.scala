@@ -18,8 +18,7 @@ class FoundationDbCacheSpec
     extends AsyncWordSpec
     with AsyncMockFactory
     with OneInstancePerTest
-    with Matchers
-    with LazyLogging {
+    with Matchers {
 
   val cachedWeatherRepository = mock[CachedWeatherRepository]
   val purgeSignal = PublishSubject[Unit]()
